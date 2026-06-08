@@ -3,31 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Race</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Bombhead - Menu Principal</title>
+    <link rel="stylesheet" href="./css/home.css">
 </head>
 <body>
-<div id="wrap">
-    <!-- cBg: background pré-renderizado (céu, planetas, árvores, estradas) -->
-    <canvas id="cBg"   width="800" height="560"></canvas>
-    <!-- cMap: mapa de fases + herói (ou tela de título/resultado) -->
-    <canvas id="cMap"  width="800" height="560"></canvas>
-    <!-- cGame: gameplay da nave (scroll, tiros, discos) -->
-    <canvas id="cGame" width="800" height="560"></canvas>
-    <!-- cUI: overlay de fade (sempre no topo) -->
-    <canvas id="cUI"   width="800" height="560"></canvas>
-</div>
 
-<!--
-    Ordem de carregamento importa:
-    1. Util.js      → classes base (Obj, Nave, Disco, Tiro, BG, Texto, Hero) + helpers
-    2. MapEngine.js → dados de fases (stages, roads), buildBg(), drawMapLayer()
-    3. GameEngine.js → stageConfigs, startGame(), updateGame(), drawGame(), drawResult()
-    4. space.js     → loop principal, estados, input, fade, inicialização
--->
-<script src="Util.js"></script>
-<script src="MapEngine.js"></script>
-<script src="GameEngine.js"></script>
-<script src="space.js"></script>
+    <div class="logo-container">
+        <img src="./imagens/Captura_de_tela_2026-06-08_085743-removebg-preview.png" alt="Bombhead Logo" class="logo-img">
+    </div>
+
+    <div class="menu-container">
+        <nav class="menu-nav">
+            <a href="./game.html" class="menu-btn">JOGAR</a>
+            <a href="./html/sobre.html" class="menu-btn">SOBRE</a>
+            <a href="./html/creditos.html" class="menu-btn">CRÉDITOS</a>
+        </nav>
+    </div>
+
 </body>
 </html>
