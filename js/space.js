@@ -16,7 +16,7 @@ let fundoCenario4 = new Fundo(0, -1680, 800, 560, 'assets/background2.jpg')
 let navePrincipalDoJogador = new Nave(375, 470, 50, 70, 'assets/nave.png')
 
 // Herói que anda no mapa
-let personagemNoMapa = new HeroiMapa(170, 260, 80, 70, 'assets/personagens_inicio.png')
+let personagemNoMapa = new HeroiMapa(170, 260, 90, 70, 'assets/personagens_inicio.png')
 
 let textoFixoDePontos = new Texto()
 let textoComValorDePontos = new Texto()
@@ -252,7 +252,6 @@ function rodarTickDoJogoPrincipal() {
         desenha_mapa()
         personagemNoMapa.mover() // Movimenta o herói
         personagemNoMapa.desenharObjeto() // Desenha o herói em cima do mapa
-        atualiza_mapa() // Chama a função vazia do MapEngine
     }
     else if (estadoAtualDoJogo === ESTADOS_DO_JOGO.JOGANDO) {
         desenharGraficosDoNivel()
