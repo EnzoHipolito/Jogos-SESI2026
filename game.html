@@ -5,21 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Space Race</title>
     <link rel="stylesheet" href="../style.css">
-    <script src="../Util.js" defer></script>
-    <script src="../MapEngine.js" defer></script>
-    <script src="../GameEngine.js" defer></script>
-    <script src="../space.js" defer></script>
+    <script src="./js/Util.js" defer></script>
+    <script src="./js/MapEngine.js" defer></script>
+    <script src="./js/space.js" defer></script>
 </head>
 <body>
     <div id="wrap">
-        <!-- cBg: background pré-renderizado (céu, planetas, árvores, estradas) -->
-        <canvas id="cBg" width="800" height="560"></canvas>
-        <!-- cMap: mapa de fases + herói (ou tela de título/resultado) -->
-        <canvas id="cMap" width="800" height="560"></canvas>
-        <!-- cGame: gameplay da nave (scroll, tiros, discos) -->
-        <canvas id="cGame" width="800" height="560"></canvas>
-        <!-- cUI: overlay de fade (sempre no topo) -->
-        <canvas id="cUI" width="800" height="560"></canvas>
+        <canvas id="des" width="800" height="560"></canvas>
     </div>
 </body>
 </html>
