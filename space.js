@@ -17,7 +17,7 @@ let state = S.TITLE;
 let fadeAlpha = 0, fadeDir = 0, fadeCb = null;
 
 function fadeTo(cb) {
-    if (fadeDir !== 0) return; // ignora se já há um fade em curso
+    if (fadeDir !== 0) return;
     fadeDir   = 1;
     fadeAlpha = 0;
     fadeCb    = cb;
@@ -43,19 +43,43 @@ function _applyFadeOverlay() {
     }
 }
 
-// ─── Dados globais de progresso ──────────────
-const completedStages = [false, false, false, false, false];
+// ─── Dados globais de progresso (3 fases) ───
+const completedStages = [false, false, false];
 
-// ─── Herói do mapa ───────────────────────────
-const hero = new Hero(stages[0].x, stages[0].y);
+let hero = new Hero(
+    stages[0].x,
+    stages[0].y - 45
+);
 
-// ─── Input global ────────────────────────────
+// ─── Verificação periódica de estado de fase ─
+function checkGameState() {
+    if (state !== S.PLAYING || fadeDir !== 0) return;
+
+    if (isGameWon()) {
+        pauseEngine();
+        completedStages[activeStage] = true;
+        fadeTo(() => { state = S.WIN; });
+    } else if (isGameLost()) {
+        pauseEngine();
+        fadeTo(() => { state = S.LOSE; });
+    }
+}
+
+// ─── Entrar em uma fase ──────────────────────
+function enterStage(si) {
+    if (fadeDir !== 0) return;
+    const unlocked = si === 0 || completedStages[si - 1];
+    if (!unlocked) return;
+    fadeTo(() => { startGame(si); state = S.PLAYING; });
+}
+
+// ─── Input de teclado ────────────────────────
 const keys = {};
 
 document.addEventListener('keydown', e => {
     keys[e.key] = true;
 
-    // Título: qualquer fade em curso bloqueia o input
+    // Título
     if (state === S.TITLE) {
         if (fadeDir === 0 && (e.key === 'Enter' || e.key === ' ')) {
             fadeTo(() => { state = S.MAP; });
@@ -65,13 +89,22 @@ document.addEventListener('keydown', e => {
 
     // Mapa
     if (state === S.MAP) {
-        if (fadeDir === 0 && (e.key === 'Enter' || e.key === ' ') && hero.nearStage >= 0) {
-            const si       = hero.nearStage;
-            const unlocked = si === 0 || completedStages[si - 1];
-            if (unlocked) {
-                fadeTo(() => { startGame(si); state = S.PLAYING; });
-            }
+
+        const num = parseInt(e.key);
+        if (!isNaN(num) && num >= 1 && num <= stages.length) {
+            enterStage(num - 1);
+            return;
         }
+    
+        if (e.key === 'Enter' && hero.nearStage >= 0) {
+            enterStage(hero.nearStage);
+            return;
+        }
+    
+        if (e.key === 'Escape' && fadeDir === 0) {
+            fadeTo(() => { state = S.TITLE; });
+        }
+        return;
     }
 
     // Jogando
@@ -81,9 +114,10 @@ document.addEventListener('keydown', e => {
             pauseEngine();
             fadeTo(() => { state = S.MAP; });
         }
+        return;
     }
 
-    // Resultado
+    // Resultado (WIN / LOSE)
     if (state === S.WIN || state === S.LOSE) {
         if (fadeDir === 0 && (e.key === 'Enter' || e.key === ' ')) {
             resetResTick();
@@ -101,6 +135,45 @@ document.addEventListener('keyup', e => {
     if (state === S.PLAYING) handleGameKeyUp(e);
 });
 
+// ─── Mouse no canvas do mapa ─────────────────
+let _mapHoveredStage = -1;
+
+function _canvasPoint(e) {
+    const rect   = cvMap.getBoundingClientRect();
+    const scaleX = cvMap.width  / rect.width;
+    const scaleY = cvMap.height / rect.height;
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top)  * scaleY,
+    };
+}
+
+cvMap.addEventListener('mousemove', e => {
+    if (state !== S.MAP) return;
+    const { x, y } = _canvasPoint(e);
+    const idx = getStageAtPoint(x, y);
+    _mapHoveredStage = idx;
+    setHoveredStage(idx);
+    if (idx >= 0 && (idx === 0 || completedStages[idx - 1])) {
+        cvMap.style.cursor = 'pointer';
+    } else {
+        cvMap.style.cursor = idx >= 0 ? 'not-allowed' : 'default';
+    }
+});
+
+cvMap.addEventListener('mouseleave', () => {
+    _mapHoveredStage = -1;
+    setHoveredStage(-1);
+    cvMap.style.cursor = 'default';
+});
+
+cvMap.addEventListener('click', e => {
+    if (state !== S.MAP) return;
+    const { x, y } = _canvasPoint(e);
+    const idx = getStageAtPoint(x, y);
+    if (idx >= 0) enterStage(idx);
+});
+
 // ─── Tela de título ──────────────────────────
 let titleTick = 0;
 
@@ -108,7 +181,6 @@ function drawTitle() {
     mapCtx.clearRect(0, 0, W, H);
     mapCtx.drawImage(cvBg, 0, 0);
 
-    // Overlay escuro
     mapCtx.fillStyle = 'rgba(0,0,10,0.55)';
     mapCtx.fillRect(0, 0, W, H);
 
@@ -117,12 +189,12 @@ function drawTitle() {
     mapCtx.textAlign    = 'center';
     mapCtx.textBaseline = 'alphabetic';
 
-    // Logo — sombra
+    // Logo sombra
     mapCtx.font      = 'bold 64px Georgia';
     mapCtx.fillStyle = 'rgba(0,0,0,0.6)';
     mapCtx.fillText('SPACE RACE', W / 2 + 3, H * 0.33 + 3);
 
-    // Logo — texto principal
+    // Logo principal
     mapCtx.fillStyle = '#fffbe0';
     mapCtx.fillText('SPACE RACE', W / 2, H * 0.33);
     mapCtx.fillStyle = `rgba(255,200,50,${0.6 + 0.4 * p})`;
@@ -133,12 +205,16 @@ function drawTitle() {
     mapCtx.fillStyle = 'rgba(200,230,255,0.85)';
     mapCtx.fillText('Uma aventura pelo cosmos', W / 2, H * 0.33 + 36);
 
-    // Personagem decorativo flutuando
+    // Nave flutuando (usa nave.png — carregada via getImg)
+    const naveImg = getImg('assets/nave.png');
+    const naveW = 60, naveH = 84;
+    const naveX = W / 2 - naveW / 2;
+    const naveY = H * 0.47 + p * 8;
     mapCtx.save();
-    mapCtx.translate(W / 2, H * 0.55 + p * 8);
-    mapCtx.scale(2.5, 2.5);
-    const tempHero = new Hero(0, 0);
-    tempHero.draw(mapCtx, titleTick, false);
+    mapCtx.shadowColor = 'rgba(0, 200, 255, 0.6)';
+    mapCtx.shadowBlur  = 18;
+    mapCtx.drawImage(naveImg, naveX, naveY, naveW, naveH);
+    mapCtx.shadowBlur  = 0;
     mapCtx.restore();
 
     // Press Enter
@@ -151,7 +227,7 @@ function drawTitle() {
     // Dica de controles
     mapCtx.font      = '11px Georgia';
     mapCtx.fillStyle = 'rgba(180,200,255,0.5)';
-    mapCtx.fillText('WASD — andar no mapa   L/Z — atirar   ESC — voltar', W / 2, H - 14);
+    mapCtx.fillText('Clique na fase ou use as teclas 1-3  |  L/Z — atirar  |  ESC — voltar', W / 2, H - 14);
 
     titleTick++;
 }
@@ -163,54 +239,46 @@ function loop() {
     tick++;
     uiCtx.clearRect(0, 0, W, H);
 
-    // ── Título ──
+    // Título
     if (state === S.TITLE) {
         drawTitle();
-        // IMPORTANTE: atualiza o fade ANTES do return para que a transição funcione
         if (fadeAlpha > 0 || fadeDir !== 0) updateFade();
         _applyFadeOverlay();
         requestAnimationFrame(loop);
         return;
     }
 
-    // ── Mapa ──
+    // Mapa
     if (state === S.MAP) {
-        hero.update(keys, W, H);
-        hero.checkNearStage(stages);
-
         mapCtx.clearRect(0, 0, W, H);
         gameCtx.clearRect(0, 0, W, H);
-        mapCtx.drawImage(cvBg, 0, 0);
-        drawMapLayer(mapCtx, hero, completedStages, tick);
+    
+        hero.update(keys, W, H);
+        hero.checkNearStage(stages);
+    
+        drawMapLayer(
+            mapCtx,
+            hero,
+            completedStages,
+            tick
+        );
     }
 
-    // ── Jogando ──
+
+    // Jogando
     else if (state === S.PLAYING) {
         mapCtx.clearRect(0, 0, W, H);
         updateGame(keys);
         drawGame(gameCtx, W, H);
-
-        // Verifica vitória/derrota apenas se não há fade em curso
-        if (fadeDir === 0) {
-            if (isGameWon()) {
-                pauseEngine();
-                completedStages[activeStage] = true;
-                fadeTo(() => { state = S.WIN; });
-            } else if (isGameLost()) {
-                pauseEngine();
-                fadeTo(() => { state = S.LOSE; });
-            }
-        }
+        checkGameState();
     }
 
-    // ── Resultado ──
+    // Resultado
     else if (state === S.WIN || state === S.LOSE) {
         drawResult(gameCtx, mapCtx, state === S.WIN, W, H);
     }
 
-    // Atualiza fade
     if (fadeAlpha > 0 || fadeDir !== 0) updateFade();
-
     _applyFadeOverlay();
     requestAnimationFrame(loop);
 }

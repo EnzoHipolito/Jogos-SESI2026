@@ -1,10 +1,8 @@
-// ─── Configuração por fase ──────────────────
+// ─── Configuração por fase (3 fases) ────────
 const stageConfigs = [
     { discoSpd: [1.5, 2.5], rates: [90, 120, 180], lives: 5, ptsWin: 3,  bgs: ['assets/background.jpg',  'assets/background2.jpg'] },
     { discoSpd: [2.5, 4.0], rates: [70, 100, 150], lives: 5, ptsWin: 5,  bgs: ['assets/background2.jpg', 'assets/background.jpg']  },
     { discoSpd: [3.5, 5.5], rates: [55,  80, 120], lives: 4, ptsWin: 8,  bgs: ['assets/background.jpg',  'assets/background2.jpg'] },
-    { discoSpd: [4.0, 6.5], rates: [45,  65,  95], lives: 3, ptsWin: 12, bgs: ['assets/background2.jpg', 'assets/background.jpg']  },
-    { discoSpd: [5.0, 8.0], rates: [35,  50,  75], lives: 3, ptsWin: 20, bgs: ['assets/background.jpg',  'assets/background2.jpg'] },
 ];
 
 // ─── Estado do jogo ─────────────────────────
@@ -49,7 +47,7 @@ function startGame(stageIndex) {
 
 // ─── Atualizar lógica ────────────────────────
 function updateGame(keys) {
-    // Scroll do fundo — avança 2px por frame, reseta ao sair da tela
+    // Scroll do fundo
     gbg.forEach(b => {
         b.y += 2;
         if (b.y > 560) b.y -= 560 * 4;
@@ -168,7 +166,6 @@ function drawResult(ctx, mapCtx, win, W, H) {
     mapCtx.fillStyle = '#08001f';
     mapCtx.fillRect(0, 0, W, H);
 
-    // Estrelas orbitantes animadas
     for (let i = 0; i < 6; i++) {
         const a   = (i / 6) * Math.PI * 2 + resTick * 0.03;
         const rad = 100 + 40 * Math.sin(resTick * 0.04 + i);

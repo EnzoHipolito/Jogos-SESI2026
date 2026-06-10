@@ -1,3 +1,15 @@
+// ─── Cache global de imagens ─────────────────
+// getImg era chamada em des_obj mas nunca definida — adicionada aqui
+const _imgCache = {};
+function getImg(src) {
+    if (!_imgCache[src]) {
+        const img = new Image();
+        img.src = src;
+        _imgCache[src] = img;
+    }
+    return _imgCache[src];
+}
+
 // ─── Classe base: Obj ───────────────────────
 class Obj {
     constructor(x, y, w, h, at) {
@@ -83,15 +95,18 @@ class Texto {
     }
 }
 
+// ─── Cache de imagem do herói (singleton) ───
+const _heroImg = new Image();
+_heroImg.src = 'assets/personagens_inicio.png';
+
 // ─── Herói do mapa ──────────────────────────
-// Personagem que o jogador controla no mapa de fases
 class Hero {
     constructor(x, y) {
-        this.x       = x;
-        this.y       = y;
-        this.speed   = 3;
-        this.dir     = { x: 0, y: 0 };
-        this.facing  = 1;   // 1 = direita, -1 = esquerda
+        this.x         = x;
+        this.y         = y;
+        this.speed     = 3;
+        this.dir       = { x: 0, y: 0 };
+        this.facing    = 1;
         this.nearStage = -1;
     }
 
@@ -125,74 +140,27 @@ class Hero {
     }
 
     draw(ctx, tick, moving) {
-        ctx.save();
-        ctx.translate(this.x, this.y);
+        const img = _heroImg;
         const bob = Math.sin(tick * 0.18) * 1.5;
+        const iw  = 56;
+        const ih  = 56;
 
-        // Sombra
+        ctx.save();
+        ctx.translate(this.x, this.y + bob);
+
         ctx.beginPath();
-        ctx.ellipse(0, 18, 12, 4, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.ellipse(0, ih / 2 + 4, 18, 5, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
         ctx.fill();
 
         ctx.scale(this.facing, 1);
 
-        const legSwing = Math.sin(tick * 0.25) * (moving ? 6 : 0);
+        if (moving) {
+            const tilt = Math.sin(tick * 0.25) * 4 * (Math.PI / 180);
+            ctx.rotate(tilt);
+        }
 
-        // Perna esquerda
-        ctx.fillStyle = '#2244aa';
-        ctx.save(); ctx.translate(-5, 8 + bob); ctx.rotate((legSwing * Math.PI) / 180);
-        ctx.fillRect(-3, 0, 6, 10); ctx.restore();
-
-        // Perna direita
-        ctx.save(); ctx.translate(5, 8 + bob); ctx.rotate((-legSwing * Math.PI) / 180);
-        ctx.fillRect(-3, 0, 6, 10); ctx.restore();
-
-        // Corpo
-        ctx.fillStyle = '#3366dd';
-        ctx.beginPath();
-        ctx.ellipse(0, -2 + bob, 11, 14, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#1a3a8a'; ctx.lineWidth = 1.5; ctx.stroke();
-
-        // Detalhe do traje
-        ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        ctx.beginPath();
-        ctx.ellipse(-2, -4 + bob, 5, 7, 0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Braço esquerdo
-        ctx.fillStyle = '#2255bb';
-        ctx.save(); ctx.translate(-12, -4 + bob); ctx.rotate((-legSwing * Math.PI) / 180);
-        ctx.fillRect(-3, 0, 6, 9); ctx.restore();
-        // Braço direito
-        ctx.save(); ctx.translate(12, -4 + bob); ctx.rotate((legSwing * Math.PI) / 180);
-        ctx.fillRect(-3, 0, 6, 9); ctx.restore();
-
-        // Capacete
-        ctx.fillStyle = '#ddeeff';
-        ctx.beginPath(); ctx.arc(0, -14 + bob, 13, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#6699cc'; ctx.lineWidth = 2; ctx.stroke();
-
-        // Viseira
-        const vg = ctx.createRadialGradient(-2, -16 + bob, 0, -2, -16 + bob, 9);
-        vg.addColorStop(0, 'rgba(140,220,255,0.9)');
-        vg.addColorStop(0.6, 'rgba(60,140,220,0.6)');
-        vg.addColorStop(1, 'rgba(20,80,180,0.3)');
-        ctx.fillStyle = vg;
-        ctx.beginPath(); ctx.ellipse(-1, -15 + bob, 8, 7, 0, 0, Math.PI * 2); ctx.fill();
-
-        // Brilho da viseira
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.beginPath(); ctx.ellipse(-4, -18 + bob, 3, 2, 0.5, 0, Math.PI * 2); ctx.fill();
-
-        // Antena
-        ctx.strokeStyle = '#aabbdd'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(4, -26 + bob); ctx.lineTo(6, -32 + bob); ctx.stroke();
-        ctx.fillStyle = '#ff4466';
-        ctx.beginPath(); ctx.arc(6, -33 + bob, 2.5, 0, Math.PI * 2); ctx.fill();
-
+        ctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
         ctx.restore();
     }
 }
@@ -225,7 +193,6 @@ function drawStar(ctx, cx, cy, r, color) {
     ctx.restore();
 }
 
-// Gerador determinístico de números aleatórios (seed)
 function rng(seed) {
     let s = seed;
     return () => {
