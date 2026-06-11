@@ -1,12 +1,13 @@
 let contexto = document.getElementById('des').getContext('2d')
 let elementoCanvasDoJogo = document.getElementById('des')
 
-// ─── Estados do Jogo ─────────────────────────
-const ESTADOS_DO_JOGO = { MAPA: 'MAPA', JOGANDO: 'JOGANDO', RESULTADO: 'RESULTADO' }
-let estadoAtualDoJogo = ESTADOS_DO_JOGO.MAPA
-let indiceDaFaseSelecionada = 0
-let configuracaoDaFaseAtual = null
+// ─── Estados da Fase ─────────────────────────
+const ESTADOS_DA_FASE = { JOGANDO: 'JOGANDO', RESULTADO: 'RESULTADO' }
+let estadoAtualDaFase = ESTADOS_DA_FASE.JOGANDO
 let mensagemFinalDeResultado = ''
+
+// A variável global ID_DA_FASE deve vir do HTML (0, 1 ou 2)
+let configuracaoDaFaseAtual = fasesDoJogo[ID_DA_FASE];
 
 // ─── Objetos Básicos ─────────────────────────
 let fundoCenario1 = new Fundo(0, 0, 800, 560, 'assets/background.jpg')
@@ -14,9 +15,6 @@ let fundoCenario2 = new Fundo(0, -560, 800, 560, 'assets/background2.jpg')
 let fundoCenario3 = new Fundo(0, -1120, 800, 560, 'assets/background.jpg')
 let fundoCenario4 = new Fundo(0, -1680, 800, 560, 'assets/background2.jpg')
 let navePrincipalDoJogador = new Nave(375, 470, 50, 70, 'assets/nave.png')
-
-// Herói que anda no mapa
-let personagemNoMapa = new HeroiMapa(170, 260, 90, 70, 'assets/personagens_inicio.png')
 
 let textoFixoDePontos = new Texto()
 let textoComValorDePontos = new Texto()
@@ -106,67 +104,38 @@ let gerenciadorDeDiscos = {
     }
 }
 
-// ─── Controles Teclado ──────────────────────────
 document.addEventListener('keydown', (eventoTeclado) => {
-    if (estadoAtualDoJogo === ESTADOS_DO_JOGO.MAPA) {
-        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') personagemNoMapa.direcaoX = -personagemNoMapa.velocidade
-        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') personagemNoMapa.direcaoX = personagemNoMapa.velocidade
-        if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') personagemNoMapa.direcaoY = -personagemNoMapa.velocidade
-        if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') personagemNoMapa.direcaoY = personagemNoMapa.velocidade
-
-        if (eventoTeclado.key === 'Enter') {
-            // Verifica se o herói está em cima de uma fase para entrar
-            let centroDaImagemHeroiX = personagemNoMapa.posicaoX + personagemNoMapa.largura / 2
-            let centroDaImagemHeroiY = personagemNoMapa.posicaoY + personagemNoMapa.altura / 2
-            let identificadorDaFaseNoPonto = verificarQualFaseEstaNoPonto(centroDaImagemHeroiX, centroDaImagemHeroiY)
-
-            if (identificadorDaFaseNoPonto >= 0) {
-                const faseEstaLiberadaParaJogar = identificadorDaFaseNoPonto === 0 || fasesJaCompletadas[identificadorDaFaseNoPonto - 1]
-                if (faseEstaLiberadaParaJogar) {
-                    iniciarNivelDoJogo(identificadorDaFaseNoPonto)
-                }
-            }
-        }
-    }
-    else if (estadoAtualDoJogo === ESTADOS_DO_JOGO.JOGANDO) {
+    if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') navePrincipalDoJogador.direcaoDeMovimento = -5
         if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') navePrincipalDoJogador.direcaoDeMovimento = 5
     }
-    else if (estadoAtualDoJogo === ESTADOS_DO_JOGO.RESULTADO) {
+    else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
         if (eventoTeclado.key === 'Enter') {
-            estadoAtualDoJogo = ESTADOS_DO_JOGO.MAPA
+            window.location.href = "mapa.html"
         }
+    }
+
+    if (eventoTeclado.key === 'Escape') {
+        window.location.href = "mapa.html"
     }
 })
 
 document.addEventListener('keyup', (eventoTeclado) => {
-    if (estadoAtualDoJogo === ESTADOS_DO_JOGO.MAPA) {
-        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') if (personagemNoMapa.direcaoX < 0) personagemNoMapa.direcaoX = 0
-        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') if (personagemNoMapa.direcaoX > 0) personagemNoMapa.direcaoX = 0
-        if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') if (personagemNoMapa.direcaoY < 0) personagemNoMapa.direcaoY = 0
-        if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') if (personagemNoMapa.direcaoY > 0) personagemNoMapa.direcaoY = 0
-    }
-    else if (estadoAtualDoJogo === ESTADOS_DO_JOGO.JOGANDO) {
+    if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') navePrincipalDoJogador.direcaoDeMovimento = 0
         if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') navePrincipalDoJogador.direcaoDeMovimento = 0
     }
 })
 
 document.addEventListener('keypress', (eventoTeclado) => {
-    if (estadoAtualDoJogo !== ESTADOS_DO_JOGO.JOGANDO) return
+    if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
     if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
         listaDeTirosDisparados.push(new Tiro(navePrincipalDoJogador.posicaoX - 4 + navePrincipalDoJogador.largura / 2, navePrincipalDoJogador.posicaoY, 8, 16, 'red'))
     }
 })
 
-// ─── Integração Mouse Removida ─────────────────
-
 // ─── Lógica ──────────────────────────────────
-function iniciarNivelDoJogo(indiceDaFaseEscolhida) {
-    indiceDaFaseSelecionada = indiceDaFaseEscolhida
-    configuracaoDaFaseAtual = fasesDoJogo[indiceDaFaseEscolhida]
-
-    // Reset da nave e dos grupos
+function iniciarFase() {
     navePrincipalDoJogador.pontos = 0
     navePrincipalDoJogador.vida = configuracaoDaFaseAtual.vidasDaFase
     navePrincipalDoJogador.posicaoX = 375
@@ -178,9 +147,8 @@ function iniciarNivelDoJogo(indiceDaFaseEscolhida) {
     gerenciadorDeDiscos.contadorTempoInimigo3 = 0
 
     elementoCanvasDoJogo.style.cursor = 'default'
-    estadoAtualDoJogo = ESTADOS_DO_JOGO.JOGANDO
+    estadoAtualDaFase = ESTADOS_DA_FASE.JOGANDO
 
-    // Tenta tocar a música (pode falhar se o navegador bloquear autoplay)
     try { audioMotorDaNave.currentTime = 0; audioMotorDaNave.play().catch(() => { }) } catch (erroDoNavegador) { }
 }
 
@@ -202,7 +170,7 @@ function desenharTelaDeVitoriaOuDerrota() {
     contexto.font = 'bold 50px Arial'
     contexto.fillText(mensagemFinalDeResultado, 400, 260)
     contexto.font = '20px Arial'
-    contexto.fillText('Aperte Enter para voltar ao mapa', 400, 320)
+    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 400, 320)
 }
 
 function desenharGraficosDoNivel() {
@@ -215,10 +183,15 @@ function desenharGraficosDoNivel() {
     gerenciadorDeDiscos.desenharNaTela()
 
     textoFixoDePontos.desenharTexto('Pontos:', 20, 40, 'white', '30px Georgia')
-    // Mostra Pontos/Alvo da fase
     textoComValorDePontos.desenharTexto(`${navePrincipalDoJogador.pontos}/${configuracaoDaFaseAtual.pontosParaVencer}`, 130, 40, 'white', '30px Georgia')
     textoFixoDeVidas.desenharTexto('Vidas:', 640, 40, 'white', '30px Georgia')
     textoComValorDeVidas.desenharTexto(navePrincipalDoJogador.vida, 740, 40, 'white', '30px Georgia')
+
+    // Instrução ESC
+    contexto.textAlign = 'center'
+    contexto.font = '14px Arial'
+    contexto.fillStyle = 'rgba(255,255,255,0.7)'
+    contexto.fillText('Pressione [ESC] para voltar ao Mapa', 400, 540)
 }
 
 function atualizarCalculosDoNivel() {
@@ -231,33 +204,27 @@ function atualizarCalculosDoNivel() {
     gerenciadorDeDiscos.atualizarPosicoes()
     conferirBatidaDaNaveComInimigos()
 
-    // Condição de Derrota ou Vitória
     if (navePrincipalDoJogador.vida <= 0) {
         mensagemFinalDeResultado = 'DERROTA!'
-        estadoAtualDoJogo = ESTADOS_DO_JOGO.RESULTADO
+        estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
         audioMotorDaNave.pause()
     } else if (navePrincipalDoJogador.pontos >= configuracaoDaFaseAtual.pontosParaVencer) {
         mensagemFinalDeResultado = 'VITÓRIA!'
-        fasesJaCompletadas[indiceDaFaseSelecionada] = true // Desbloqueia próxima fase
-        estadoAtualDoJogo = ESTADOS_DO_JOGO.RESULTADO
+        fasesJaCompletadas[ID_DA_FASE] = true
+        salvarProgresso() // Salva as fases destravadas no localStorage
+        estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
         audioMotorDaNave.pause()
     }
 }
 
-// ─── Loop Principal ──────────────────────────
 function rodarTickDoJogoPrincipal() {
     contexto.clearRect(0, 0, 800, 560)
 
-    if (estadoAtualDoJogo === ESTADOS_DO_JOGO.MAPA) {
-        desenha_mapa()
-        personagemNoMapa.mover() // Movimenta o herói
-        personagemNoMapa.desenharObjeto() // Desenha o herói em cima do mapa
-    }
-    else if (estadoAtualDoJogo === ESTADOS_DO_JOGO.JOGANDO) {
+    if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         desenharGraficosDoNivel()
         atualizarCalculosDoNivel()
     }
-    else if (estadoAtualDoJogo === ESTADOS_DO_JOGO.RESULTADO) {
+    else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
         desenharGraficosDoNivel() // Mantém o jogo de fundo
         desenharTelaDeVitoriaOuDerrota() // Desenha tela de vitória/derrota por cima
     }
@@ -265,4 +232,5 @@ function rodarTickDoJogoPrincipal() {
     requestAnimationFrame(rodarTickDoJogoPrincipal)
 }
 
+iniciarFase()
 rodarTickDoJogoPrincipal()
