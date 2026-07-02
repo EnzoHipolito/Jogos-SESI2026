@@ -99,6 +99,21 @@ class Tiro extends ObjetoDoJogo {
     }
 }
 
+// ─── Tiro do Boss ──────────────────────────
+class TiroBoss extends ObjetoDoJogo {
+    desenharTiro() {
+        contexto.fillStyle = '#ff3333';
+        contexto.shadowColor = '#ff3333';
+        contexto.shadowBlur = 8;
+        contexto.fillRect(this.posicaoX, this.posicaoY, this.largura, this.altura);
+        contexto.shadowBlur = 0;
+    }
+
+    mover() {
+        this.posicaoX -= 10;
+    }
+}
+
 // ─── Fundo do Jogo (faixas scrolláveis) ────
 class Fundo extends ObjetoDoJogo {
     mover(limiteInicial, limiteFinal) {

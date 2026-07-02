@@ -25,6 +25,7 @@ audioMotorDaNave.loop = true
 audioDeColisao.volume = 0.7
 
 let listaDeTirosDisparados = []
+let listaDeTirosDoBoss = []
 let gerenciadorDeTiros = {
     desenharNaTela() {
         listaDeTirosDisparados.forEach((tiroDisparadoAgora) => {
@@ -41,66 +42,90 @@ let gerenciadorDeTiros = {
     }
 }
 
-let listaDeDiscosInimigos = []
-let gerenciadorDeDiscos = {
-    contadorTempoInimigo1: 0,
-    contadorTempoInimigo2: 0,
-    contadorTempoInimigo3: 0,
+// ─── Boss da Fase (inimigo único) ─────────────
+let bossDaFase = {
+    posicaoX: 620,
+    posicaoY: 200,
+    largura: 150,
+    altura: 150,
+    imagemSrc: 'assets/disco.png',
+    direcaoVertical: 1,
+    velocidade: 1.5,
+    vidaDoBoss: 0,
+    vidaMaximaDoBoss: 0,
+    contadorDeTiro: 0,
 
-    criarInimigosNovos() {
-        if (!configuracaoDaFase) return; // Só cria se tiver fase ativa
-        this.contadorTempoInimigo1 += 1
-        this.contadorTempoInimigo2 += 1
-        this.contadorTempoInimigo3 += 1
-        let posicaoAleatoriaY1 = (Math.random() * (510 - 2 + 1) + 2)
-        let posicaoAleatoriaY2 = (Math.random() * (510 - 2 + 1) + 2)
-        let posicaoAleatoriaY3 = (Math.random() * (510 - 2 + 1) + 2)
+    /**
+     * Inicializa o boss no começo da fase.
+     * A vida do boss é igual aos pontos necessários para vencer.
+     */
+    iniciar() {
+        this.posicaoX = 620
+        this.posicaoY = 200
+        this.direcaoVertical = 1
+        this.vidaMaximaDoBoss = configuracaoDaFase.pontosParaVencer
+        this.vidaDoBoss = this.vidaMaximaDoBoss
+        this.contadorDeTiro = 0
+    },
 
-        // Pega as velocidades da fase
-        let velocidadeMinima = configuracaoDaFase.velocidadeDosInimigos[0]
-        let velocidadeMaxima = configuracaoDaFase.velocidadeDosInimigos[1]
-        let calculaSorteioVelocidade = () => Math.random() * (velocidadeMaxima - velocidadeMinima) + velocidadeMinima
-
-        if (this.contadorTempoInimigo1 >= configuracaoDaFase.taxaDeCriacao[0]) {
-            this.contadorTempoInimigo1 = 0
-            listaDeDiscosInimigos.push(new Disco(850, posicaoAleatoriaY1, 50, 50, 'assets/disco.png', calculaSorteioVelocidade()))
+    /**
+     * Move o boss devagar pra cima e pra baixo, quicando nas bordas.
+     */
+    mover() {
+        this.posicaoY += this.velocidade * this.direcaoVertical
+        if (this.posicaoY <= 10) {
+            this.posicaoY = 10
+            this.direcaoVertical = 1
         }
-        if (this.contadorTempoInimigo2 >= configuracaoDaFase.taxaDeCriacao[1]) {
-            this.contadorTempoInimigo2 = 0
-            listaDeDiscosInimigos.push(new Disco(900, posicaoAleatoriaY2, 50, 50, 'assets/disco2.png', calculaSorteioVelocidade()))
-        }
-        if (this.contadorTempoInimigo3 >= configuracaoDaFase.taxaDeCriacao[2]) {
-            this.contadorTempoInimigo3 = 0
-            listaDeDiscosInimigos.push(new Disco(950, posicaoAleatoriaY3, 50, 50, 'assets/disco3.png', calculaSorteioVelocidade()))
+        if (this.posicaoY >= 560 - this.altura - 10) {
+            this.posicaoY = 560 - this.altura - 10
+            this.direcaoVertical = -1
         }
     },
-    desenharNaTela() {
-        listaDeDiscosInimigos.forEach((discoInimigoAparecendo) => {
-            discoInimigoAparecendo.desenharObjeto()
-        })
+
+    /**
+     * Desenha o boss na tela junto com sua barra de vida.
+     */
+    desenharObjeto() {
+        contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura)
+
+        // Barra de vida do boss (acima dele)
+        let porcentagemVida = this.vidaDoBoss / this.vidaMaximaDoBoss
+        let larguraDaBarra = this.largura
+        contexto.fillStyle = 'rgba(0, 0, 0, 0.5)'
+        contexto.fillRect(this.posicaoX, this.posicaoY - 18, larguraDaBarra, 12)
+        contexto.fillStyle = porcentagemVida > 0.3 ? '#00ff44' : '#ff3333'
+        contexto.fillRect(this.posicaoX, this.posicaoY - 18, larguraDaBarra * porcentagemVida, 12)
+        // Borda da barra
+        contexto.strokeStyle = 'white'
+        contexto.lineWidth = 1
+        contexto.strokeRect(this.posicaoX, this.posicaoY - 18, larguraDaBarra, 12)
     },
-    destruirSeAcertouTiro() {
-        listaDeTirosDisparados.forEach((tiroDisparadoAgora) => {
-            listaDeDiscosInimigos.forEach((discoInimigoAparecendo) => {
-                if (tiroDisparadoAgora.colidiuCom(discoInimigoAparecendo)) {
-                    listaDeTirosDisparados.splice(listaDeTirosDisparados.indexOf(tiroDisparadoAgora), 1)
-                    listaDeDiscosInimigos.splice(listaDeDiscosInimigos.indexOf(discoInimigoAparecendo), 1)
-                    naveDoJogador.pontos += 1
-                }
-            })
-        })
+
+    /**
+     * Verifica se o boss colidiu com outro objeto (nave ou tiro).
+     */
+    colidiuCom(outroObjeto) {
+        return (this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
+               (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
+               (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
+               (this.posicaoY + this.altura > outroObjeto.posicaoY)
     },
-    atualizarPosicoes() {
-        this.criarInimigosNovos()
-        this.destruirSeAcertouTiro()
-        listaDeDiscosInimigos.forEach((discoInimigoAparecendo) => {
-            discoInimigoAparecendo.mover()
-            if (discoInimigoAparecendo.posicaoX <= -60) {
-                listaDeDiscosInimigos.splice(listaDeDiscosInimigos.indexOf(discoInimigoAparecendo), 1)
-            }
-        })
+
+    /**
+     * O boss atira um TiroBoss em direção à nave do jogador periodicamente.
+     */
+    atirar() {
+        this.contadorDeTiro += 1
+        if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
+            this.contadorDeTiro = 0
+            listaDeTirosDoBoss.push(new TiroBoss(this.posicaoX, this.posicaoY + this.altura / 2 - 4, 16, 8, 'red'))
+        }
     }
 }
+
+// Cooldown para evitar que encostar no boss tire todas as vidas de uma vez
+let cooldownDeColisao = 0
 
 document.addEventListener('keydown', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
@@ -145,10 +170,9 @@ function iniciarFase() {
     naveDoJogador.posicaoY = 245
     naveDoJogador.direcaoDeMovimento = 0
     listaDeTirosDisparados = []
-    listaDeDiscosInimigos = []
-    gerenciadorDeDiscos.contadorTempoInimigo1 = 0
-    gerenciadorDeDiscos.contadorTempoInimigo2 = 0
-    gerenciadorDeDiscos.contadorTempoInimigo3 = 0
+    listaDeTirosDoBoss = []
+    bossDaFase.iniciar()
+    cooldownDeColisao = 0
 
     elementoCanvas.style.cursor = 'default'
     estadoAtualDaFase = ESTADOS_DA_FASE.JOGANDO
@@ -157,13 +181,42 @@ function iniciarFase() {
 }
 
 /**
- * Verifica se a nave do jogador colidiu com algum dos inimigos na tela.
- * Caso haja colisão, remove o inimigo e desconta 1 de vida do jogador.
+ * Verifica se a nave do jogador encostou no boss.
+ * Usa um cooldown para não descontar vida continuamente.
  */
-function conferirBatidaDaNaveComInimigos() {
-    listaDeDiscosInimigos.forEach((discoInimigoAparecendo) => {
-        if (naveDoJogador.colidiuCom(discoInimigoAparecendo)) {
-            listaDeDiscosInimigos.splice(listaDeDiscosInimigos.indexOf(discoInimigoAparecendo), 1)
+function conferirBatidaDaNaveComBoss() {
+    if (cooldownDeColisao > 0) {
+        cooldownDeColisao -= 1
+        return
+    }
+    if (bossDaFase.colidiuCom(naveDoJogador)) {
+        naveDoJogador.vida -= 1
+        cooldownDeColisao = 60 // ~1 segundo de invencibilidade
+        try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
+    }
+}
+
+/**
+ * Verifica se algum tiro acertou o boss.
+ * Se sim, remove o tiro, diminui a vida do boss e dá 1 ponto.
+ */
+function conferirTirosNoBoss() {
+    listaDeTirosDisparados.forEach((tiroDisparadoAgora) => {
+        if (bossDaFase.colidiuCom(tiroDisparadoAgora)) {
+            listaDeTirosDisparados.splice(listaDeTirosDisparados.indexOf(tiroDisparadoAgora), 1)
+            bossDaFase.vidaDoBoss -= 1
+            naveDoJogador.pontos += 1
+        }
+    })
+}
+
+/**
+ * Verifica se os tiros disparados pelo boss acertaram a nave.
+ */
+function conferirTirosDoBossNaNave() {
+    listaDeTirosDoBoss.forEach((tiro) => {
+        if (naveDoJogador.colidiuCom(tiro)) {
+            listaDeTirosDoBoss.splice(listaDeTirosDoBoss.indexOf(tiro), 1)
             naveDoJogador.vida -= 1
             try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
         }
@@ -193,7 +246,8 @@ function desenharGraficosDoNivel() {
     fundoDoCenario.desenharObjeto()
     naveDoJogador.desenharObjeto()
     gerenciadorDeTiros.desenharNaTela()
-    gerenciadorDeDiscos.desenharNaTela()
+    listaDeTirosDoBoss.forEach((tiro) => tiro.desenharTiro())
+    bossDaFase.desenharObjeto()
 
     textoFixoDePontos.desenharTexto('Pontos:', 20, 40, 'white', '30px Georgia')
     textoComValorDePontos.desenharTexto(`${naveDoJogador.pontos}/${configuracaoDaFase.pontosParaVencer}`, 130, 40, 'white', '30px Georgia')
@@ -215,8 +269,19 @@ function desenharGraficosDoNivel() {
 function atualizarCalculosDoNivel() {
     naveDoJogador.mover()
     gerenciadorDeTiros.atualizarPosicoes()
-    gerenciadorDeDiscos.atualizarPosicoes()
-    conferirBatidaDaNaveComInimigos()
+    
+    bossDaFase.mover()
+    bossDaFase.atirar()
+    listaDeTirosDoBoss.forEach((tiro) => {
+        tiro.mover()
+        if (tiro.posicaoX <= -20) {
+            listaDeTirosDoBoss.splice(listaDeTirosDoBoss.indexOf(tiro), 1)
+        }
+    })
+
+    conferirTirosNoBoss()
+    conferirBatidaDaNaveComBoss()
+    conferirTirosDoBossNaNave()
 
     if (naveDoJogador.vida <= 0) {
         mensagemDeResultado = 'DERROTA!'
