@@ -37,7 +37,7 @@ document.addEventListener('keyup', (eventoTeclado) => {
 
 function rodarTickDoJogoPrincipal() {
     contexto.clearRect(0, 0, 800, 560)
-    desenha_mapa()
+    desenharMapa()
     personagemNoMapa.mover()
     personagemNoMapa.desenharObjeto()
     requestAnimationFrame(rodarTickDoJogoPrincipal)

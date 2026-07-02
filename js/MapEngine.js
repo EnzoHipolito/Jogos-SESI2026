@@ -7,9 +7,9 @@ const fasesDoJogo = [
 
 // ─── Progresso global (quais fases foram completadas)
 let fasesJaCompletadas = [false, false, false];
-const fasesSalvas = localStorage.getItem('bombhead_fases');
-if (fasesSalvas) {
-    fasesJaCompletadas = JSON.parse(fasesSalvas);
+const progressoSalvo = localStorage.getItem('bombhead_fases');
+if (progressoSalvo) {
+    fasesJaCompletadas = JSON.parse(progressoSalvo);
 }
 function salvarProgresso() {
     localStorage.setItem('bombhead_fases', JSON.stringify(fasesJaCompletadas));
@@ -32,7 +32,7 @@ function verificarQualFaseEstaNoPonto(posicaoMouseX, posicaoMouseY) {
 }
 
 // ─── Desenha o mapa de fases ─────────────────
-function desenha_mapa() {
+function desenharMapa() {
     // Fundo
     if (imagemFundoDoMapa.complete && imagemFundoDoMapa.naturalWidth > 0) {
         contexto.drawImage(imagemFundoDoMapa, 0, 0, 800, 560)

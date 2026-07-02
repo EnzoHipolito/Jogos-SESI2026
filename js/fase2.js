@@ -4,17 +4,15 @@ let elementoCanvasDoJogo = document.getElementById('des')
 // ─── Estados da Fase ─────────────────────────
 const ESTADOS_DA_FASE = { JOGANDO: 'JOGANDO', RESULTADO: 'RESULTADO' }
 let estadoAtualDaFase = ESTADOS_DA_FASE.JOGANDO
-let mensagemFinalDeResultado = ''
+let mensagemDeResultado = ''
 
 // A variável global ID_DA_FASE deve vir do HTML (0, 1 ou 2)
-let configuracaoDaFaseAtual = fasesDoJogo[ID_DA_FASE];
+let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 
 // ─── Objetos Básicos ─────────────────────────
-let fundoCenario1 = new Fundo(0, 0, 800, 560, 'assets/background.jpg')
-let fundoCenario2 = new Fundo(0, -560, 800, 560, 'assets/background2.jpg')
-let fundoCenario3 = new Fundo(0, -1120, 800, 560, 'assets/background.jpg')
-let fundoCenario4 = new Fundo(0, -1680, 800, 560, 'assets/background2.jpg')
-let navePrincipalDoJogador = new Nave(375, 470, 50, 70, 'assets/nave.png')
+// Utilizando um background estático que não se repete
+let fundoDoCenario = new Fundo(0, 0, 800, 560, 'assets/backgroundFase2.png')
+let naveDoJogador = new Nave(50, 270, 130, 80, 'assets/personagens_inicio.png') // Ajustei a largura/altura para nave deitada
 
 let textoFixoDePontos = new Texto()
 let textoComValorDePontos = new Texto()
@@ -36,7 +34,7 @@ let gerenciadorDeTiros = {
     atualizarPosicoes() {
         listaDeTirosDisparados.forEach((tiroDisparadoAgora) => {
             tiroDisparadoAgora.mover()
-            if (tiroDisparadoAgora.posicaoY <= -10) {
+            if (tiroDisparadoAgora.posicaoX >= 810) {
                 listaDeTirosDisparados.splice(listaDeTirosDisparados.indexOf(tiroDisparadoAgora), 1)
             }
         })
@@ -50,30 +48,30 @@ let gerenciadorDeDiscos = {
     contadorTempoInimigo3: 0,
 
     criarInimigosNovos() {
-        if (!configuracaoDaFaseAtual) return; // Só cria se tiver fase ativa
+        if (!configuracaoDaFase) return; // Só cria se tiver fase ativa
         this.contadorTempoInimigo1 += 1
         this.contadorTempoInimigo2 += 1
         this.contadorTempoInimigo3 += 1
-        let posicaoAleatoriaX1 = (Math.random() * (738 - 2 + 1) + 2)
-        let posicaoAleatoriaX2 = (Math.random() * (738 - 2 + 1) + 2)
-        let posicaoAleatoriaX3 = (Math.random() * (738 - 2 + 1) + 2)
+        let posicaoAleatoriaY1 = (Math.random() * (510 - 2 + 1) + 2)
+        let posicaoAleatoriaY2 = (Math.random() * (510 - 2 + 1) + 2)
+        let posicaoAleatoriaY3 = (Math.random() * (510 - 2 + 1) + 2)
 
         // Pega as velocidades da fase
-        let velocidadeMinima = configuracaoDaFaseAtual.velocidadeDosInimigos[0]
-        let velocidadeMaxima = configuracaoDaFaseAtual.velocidadeDosInimigos[1]
+        let velocidadeMinima = configuracaoDaFase.velocidadeDosInimigos[0]
+        let velocidadeMaxima = configuracaoDaFase.velocidadeDosInimigos[1]
         let calculaSorteioVelocidade = () => Math.random() * (velocidadeMaxima - velocidadeMinima) + velocidadeMinima
 
-        if (this.contadorTempoInimigo1 >= configuracaoDaFaseAtual.taxaDeCriacao[0]) {
+        if (this.contadorTempoInimigo1 >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorTempoInimigo1 = 0
-            listaDeDiscosInimigos.push(new Disco(posicaoAleatoriaX1, -200, 50, 50, 'assets/disco.png', calculaSorteioVelocidade()))
+            listaDeDiscosInimigos.push(new Disco(850, posicaoAleatoriaY1, 50, 50, 'assets/disco.png', calculaSorteioVelocidade()))
         }
-        if (this.contadorTempoInimigo2 >= configuracaoDaFaseAtual.taxaDeCriacao[1]) {
+        if (this.contadorTempoInimigo2 >= configuracaoDaFase.taxaDeCriacao[1]) {
             this.contadorTempoInimigo2 = 0
-            listaDeDiscosInimigos.push(new Disco(posicaoAleatoriaX2, -300, 50, 50, 'assets/disco2.png', calculaSorteioVelocidade()))
+            listaDeDiscosInimigos.push(new Disco(900, posicaoAleatoriaY2, 50, 50, 'assets/disco2.png', calculaSorteioVelocidade()))
         }
-        if (this.contadorTempoInimigo3 >= configuracaoDaFaseAtual.taxaDeCriacao[2]) {
+        if (this.contadorTempoInimigo3 >= configuracaoDaFase.taxaDeCriacao[2]) {
             this.contadorTempoInimigo3 = 0
-            listaDeDiscosInimigos.push(new Disco(posicaoAleatoriaX3, -400, 50, 50, 'assets/disco3.png', calculaSorteioVelocidade()))
+            listaDeDiscosInimigos.push(new Disco(950, posicaoAleatoriaY3, 50, 50, 'assets/disco3.png', calculaSorteioVelocidade()))
         }
     },
     desenharNaTela() {
@@ -87,7 +85,7 @@ let gerenciadorDeDiscos = {
                 if (tiroDisparadoAgora.colidiuCom(discoInimigoAparecendo)) {
                     listaDeTirosDisparados.splice(listaDeTirosDisparados.indexOf(tiroDisparadoAgora), 1)
                     listaDeDiscosInimigos.splice(listaDeDiscosInimigos.indexOf(discoInimigoAparecendo), 1)
-                    navePrincipalDoJogador.pontos += 1
+                    naveDoJogador.pontos += 1
                 }
             })
         })
@@ -97,7 +95,7 @@ let gerenciadorDeDiscos = {
         this.destruirSeAcertouTiro()
         listaDeDiscosInimigos.forEach((discoInimigoAparecendo) => {
             discoInimigoAparecendo.mover()
-            if (discoInimigoAparecendo.posicaoY >= 570) {
+            if (discoInimigoAparecendo.posicaoX <= -60) {
                 listaDeDiscosInimigos.splice(listaDeDiscosInimigos.indexOf(discoInimigoAparecendo), 1)
             }
         })
@@ -106,8 +104,8 @@ let gerenciadorDeDiscos = {
 
 document.addEventListener('keydown', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
-        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') navePrincipalDoJogador.direcaoDeMovimento = -5
-        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') navePrincipalDoJogador.direcaoDeMovimento = 5
+        if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = -5
+        if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 5
     }
     else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
         if (eventoTeclado.key === 'Enter') {
@@ -122,24 +120,30 @@ document.addEventListener('keydown', (eventoTeclado) => {
 
 document.addEventListener('keyup', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
-        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') navePrincipalDoJogador.direcaoDeMovimento = 0
-        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') navePrincipalDoJogador.direcaoDeMovimento = 0
+        if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = 0
+        if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 0
     }
 })
 
 document.addEventListener('keypress', (eventoTeclado) => {
     if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
     if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
-        listaDeTirosDisparados.push(new Tiro(navePrincipalDoJogador.posicaoX - 4 + navePrincipalDoJogador.largura / 2, navePrincipalDoJogador.posicaoY, 8, 16, 'red'))
+        listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 4, 16, 8, 'red'))
     }
 })
 
 // ─── Lógica ──────────────────────────────────
+
+/**
+ * Função responsável por inicializar todas as variáveis de estado antes de começar a fase.
+ * Reseta pontos, vidas, posição inicial da nave e listas de inimigos e tiros.
+ */
 function iniciarFase() {
-    navePrincipalDoJogador.pontos = 0
-    navePrincipalDoJogador.vida = configuracaoDaFaseAtual.vidasDaFase
-    navePrincipalDoJogador.posicaoX = 375
-    navePrincipalDoJogador.direcaoDeMovimento = 0
+    naveDoJogador.pontos = 0
+    naveDoJogador.vida = configuracaoDaFase.vidasDaFase
+    naveDoJogador.posicaoX = 50
+    naveDoJogador.posicaoY = 245
+    naveDoJogador.direcaoDeMovimento = 0
     listaDeTirosDisparados = []
     listaDeDiscosInimigos = []
     gerenciadorDeDiscos.contadorTempoInimigo1 = 0
@@ -152,40 +156,49 @@ function iniciarFase() {
     try { audioMotorDaNave.currentTime = 0; audioMotorDaNave.play().catch(() => { }) } catch (erroDoNavegador) { }
 }
 
+/**
+ * Verifica se a nave do jogador colidiu com algum dos inimigos na tela.
+ * Caso haja colisão, remove o inimigo e desconta 1 de vida do jogador.
+ */
 function conferirBatidaDaNaveComInimigos() {
     listaDeDiscosInimigos.forEach((discoInimigoAparecendo) => {
-        if (navePrincipalDoJogador.colidiuCom(discoInimigoAparecendo)) {
+        if (naveDoJogador.colidiuCom(discoInimigoAparecendo)) {
             listaDeDiscosInimigos.splice(listaDeDiscosInimigos.indexOf(discoInimigoAparecendo), 1)
-            navePrincipalDoJogador.vida -= 1
+            naveDoJogador.vida -= 1
             try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
         }
     })
 }
 
+/**
+ * Exibe a tela de resultado no fim da fase (Vitória ou Derrota).
+ * Desenha um fundo semi-transparente por cima do jogo com a mensagem final.
+ */
 function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillStyle = 'rgba(0, 0, 0, 0.7)'
     contexto.fillRect(0, 0, 800, 560)
     contexto.fillStyle = 'white'
     contexto.textAlign = 'center'
     contexto.font = 'bold 50px Arial'
-    contexto.fillText(mensagemFinalDeResultado, 400, 260)
+    contexto.fillText(mensagemDeResultado, 400, 260)
     contexto.font = '20px Arial'
     contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 400, 320)
 }
 
+/**
+ * Renderiza todos os objetos da fase na tela a cada frame (cenários, nave, tiros, inimigos).
+ * Também desenha a interface de usuário (HUD) com pontos e vidas.
+ */
 function desenharGraficosDoNivel() {
-    fundoCenario1.desenharObjeto()
-    fundoCenario2.desenharObjeto()
-    fundoCenario3.desenharObjeto()
-    fundoCenario4.desenharObjeto()
-    navePrincipalDoJogador.desenharObjeto()
+    fundoDoCenario.desenharObjeto()
+    naveDoJogador.desenharObjeto()
     gerenciadorDeTiros.desenharNaTela()
     gerenciadorDeDiscos.desenharNaTela()
 
     textoFixoDePontos.desenharTexto('Pontos:', 20, 40, 'white', '30px Georgia')
-    textoComValorDePontos.desenharTexto(`${navePrincipalDoJogador.pontos}/${configuracaoDaFaseAtual.pontosParaVencer}`, 130, 40, 'white', '30px Georgia')
+    textoComValorDePontos.desenharTexto(`${naveDoJogador.pontos}/${configuracaoDaFase.pontosParaVencer}`, 130, 40, 'white', '30px Georgia')
     textoFixoDeVidas.desenharTexto('Vidas:', 640, 40, 'white', '30px Georgia')
-    textoComValorDeVidas.desenharTexto(navePrincipalDoJogador.vida, 740, 40, 'white', '30px Georgia')
+    textoComValorDeVidas.desenharTexto(naveDoJogador.vida, 740, 40, 'white', '30px Georgia')
 
     // Instrução ESC
     contexto.textAlign = 'center'
@@ -194,22 +207,23 @@ function desenharGraficosDoNivel() {
     contexto.fillText('Pressione [ESC] para voltar ao Mapa', 400, 540)
 }
 
+/**
+ * Atualiza o estado lógico de todos os objetos em tela.
+ * Movimenta nave, gerencia posição de tiros e inimigos.
+ * Também checa se o jogador perdeu todas as vidas ou atingiu os pontos necessários.
+ */
 function atualizarCalculosDoNivel() {
-    fundoCenario1.mover(0, 1680)
-    fundoCenario2.mover(-560, 1120)
-    fundoCenario3.mover(-1120, 560)
-    fundoCenario4.mover(-1680, 0)
-    navePrincipalDoJogador.mover()
+    naveDoJogador.mover()
     gerenciadorDeTiros.atualizarPosicoes()
     gerenciadorDeDiscos.atualizarPosicoes()
     conferirBatidaDaNaveComInimigos()
 
-    if (navePrincipalDoJogador.vida <= 0) {
-        mensagemFinalDeResultado = 'DERROTA!'
+    if (naveDoJogador.vida <= 0) {
+        mensagemDeResultado = 'DERROTA!'
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
         audioMotorDaNave.pause()
-    } else if (navePrincipalDoJogador.pontos >= configuracaoDaFaseAtual.pontosParaVencer) {
-        mensagemFinalDeResultado = 'VITÓRIA!'
+    } else if (naveDoJogador.pontos >= configuracaoDaFase.pontosParaVencer) {
+        mensagemDeResultado = 'VITÓRIA!'
         fasesJaCompletadas[ID_DA_FASE] = true
         salvarProgresso() // Salva as fases destravadas no localStorage
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
@@ -217,6 +231,10 @@ function atualizarCalculosDoNivel() {
     }
 }
 
+/**
+ * Função principal (Game Loop). Roda continuamente a cada frame renderizado pelo navegador.
+ * Limpa o canvas e chama as funções de desenho e atualização de acordo com o estado do jogo.
+ */
 function rodarTickDoJogoPrincipal() {
     contexto.clearRect(0, 0, 800, 560)
 
