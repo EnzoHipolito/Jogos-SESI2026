@@ -13,7 +13,6 @@ body {
     align-items: center;
     min-height: 100vh;
     overflow: hidden;
-    /* Impede scroll acidental com setas do teclado */
     overscroll-behavior: none;
 }
 
@@ -21,7 +20,6 @@ body {
     position: relative;
     width: 800px;
     height: 560px;
-    /* Borda sutil ao redor da tela do jogo */
     box-shadow:
         0 0 0 2px rgba(100, 80, 200, 0.4),
         0 0 40px rgba(80, 40, 160, 0.35),
@@ -30,9 +28,6 @@ body {
 }
 
 canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
     display: block;
     border-radius: 4px;
 }

@@ -1,0 +1,92 @@
+/* Importando uma fonte Art Deco dos anos 30, fina e elegante */
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-image: url('../imagens/background_home.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #0c0c0c;
+    
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    font-family: 'Josefin Sans', sans-serif;
+    overflow: hidden;
+}
+
+/* --- ESTILIZAÇÃO DA LOGO NO TOPO --- */
+.logo-container {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.logo-img {
+    max-width: 380px;
+    height: auto;
+    filter: drop-shadow(4px 4px 0px #000);
+}
+
+/* --- CONTAINER DO MENU --- */
+.menu-container {
+    text-align: center;
+    position: relative;
+    top: 80px; /* Ajustado para descer um pouco mais e respirar longe da logo */
+}
+
+.menu-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Mais espaço entre os botões finos */
+}
+
+/* Estilização dos links (Botões finos estilo letreiro antigo) */
+.menu-btn {
+    text-decoration: none;
+    display: inline-block;
+    color: #8c8c8c; /* Cinza fosco discreto */
+    font-size: 2.4rem; /* Tamanho ajustado para fontes magras */
+    font-weight: 400; /* Espessura bem fina */
+    text-transform: uppercase;
+    letter-spacing: 4px; /* Espaçamento elegante entre as letras */
+    padding: 5px 20px;
+    transition: all 0.2s ease-in-out;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    width: fit-content;
+    margin: 0 auto;
+}
+
+/* Efeito quando passa o mouse por cima */
+.menu-btn:hover {
+    color: #ffffff; /* Acende em branco puro */
+    font-weight: 600; /* Ganha uma leve presença de peso, sem estourar */
+    transform: scale(1.05);
+    text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3), 2px 2px 0px #000;
+}
+
+/* Tamanhos específicos para o submenu e botão voltar */
+.sub-btn {
+    font-size: 1.9rem;
+}
+
+.back-btn {
+    font-size: 1.3rem;
+    color: #555;
+    margin-top: 15px;
+    letter-spacing: 2px;
+}
+
+.back-btn:hover {
+    color: #d9534f;
+}
