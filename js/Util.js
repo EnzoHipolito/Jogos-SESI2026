@@ -66,9 +66,9 @@ class Nave extends ObjetoDoJogo {
     }
 
     mover() {
-        this.posicaoX += this.direcaoDeMovimento;
-        if (this.posicaoX <= 0)   this.posicaoX = 0;
-        if (this.posicaoX >= 750) this.posicaoX = 750;
+        this.posicaoY += this.direcaoDeMovimento;
+        if (this.posicaoY <= 0)   this.posicaoY = 0;
+        if (this.posicaoY >= 560 - this.altura) this.posicaoY = 560 - this.altura;
     }
 }
 
@@ -80,7 +80,7 @@ class Disco extends ObjetoDoJogo {
     }
 
     mover() {
-        this.posicaoY += this.velocidadeDeQueda;
+        this.posicaoX -= this.velocidadeDeQueda;
     }
 }
 
@@ -95,7 +95,7 @@ class Tiro extends ObjetoDoJogo {
     }
 
     mover() {
-        this.posicaoY -= 10;
+        this.posicaoX += 10;
     }
 }
 

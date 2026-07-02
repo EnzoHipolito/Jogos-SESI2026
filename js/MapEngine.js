@@ -6,7 +6,14 @@ const fasesDoJogo = [
 ]
 
 // ─── Progresso global (quais fases foram completadas)
-const fasesJaCompletadas = [false, false, false]
+let fasesJaCompletadas = [false, false, false];
+const progressoSalvo = localStorage.getItem('bombhead_fases');
+if (progressoSalvo) {
+    fasesJaCompletadas = JSON.parse(progressoSalvo);
+}
+function salvarProgresso() {
+    localStorage.setItem('bombhead_fases', JSON.stringify(fasesJaCompletadas));
+}
 
 // ─── Imagem de fundo do mapa ─────────────────
 let imagemFundoDoMapa = new Image()
@@ -25,7 +32,7 @@ function verificarQualFaseEstaNoPonto(posicaoMouseX, posicaoMouseY) {
 }
 
 // ─── Desenha o mapa de fases ─────────────────
-function desenha_mapa() {
+function desenharMapa() {
     // Fundo
     if (imagemFundoDoMapa.complete && imagemFundoDoMapa.naturalWidth > 0) {
         contexto.drawImage(imagemFundoDoMapa, 0, 0, 800, 560)
@@ -91,4 +98,9 @@ function desenha_mapa() {
     contexto.font = 'bold 24px Arial'
     contexto.fillStyle = 'rgba(255,255,255,0.9)'
     contexto.fillText('SELECIONE A FASE', 400, 40)
+
+    // Instrução ESC
+    contexto.font = '14px Arial'
+    contexto.fillStyle = 'rgba(255,255,255,0.7)'
+    contexto.fillText('Pressione [ESC] para voltar ao Menu', 400, 540)
 }
