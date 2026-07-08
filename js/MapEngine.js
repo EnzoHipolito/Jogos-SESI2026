@@ -1,8 +1,8 @@
 // ─── Dados das 3 fases ───────────────────────
 const fasesDoJogo = [
-    { idFase: 0, posicaoX: 200, posicaoY: 280, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: 'assets/disco.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 5 },
-    { idFase: 1, posicaoX: 400, posicaoY: 280, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: 'assets/disco2.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 5 },
-    { idFase: 2, posicaoX: 600, posicaoY: 280, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: 'assets/disco3.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 4 },
+    { idFase: 0, posicaoX: 200, posicaoY: 280, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: 'assets/disco.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 3 },
+    { idFase: 1, posicaoX: 400, posicaoY: 280, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: 'assets/disco2.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 3 },
+    { idFase: 2, posicaoX: 600, posicaoY: 280, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: 'assets/disco3.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 3 },
 ]
 
 // ─── Progresso global (quais fases foram completadas)
@@ -20,7 +20,7 @@ let imagemFundoDoMapa = new Image()
 imagemFundoDoMapa.src = 'assets/fundo_fases.png'
 
 // // ─── Hit test: qual fase está nesse ponto? ───
-function verificarQualFaseEstaNoPonto(posicaoMouseX, posicaoMouseY) {
+function verificarFase(posicaoMouseX, posicaoMouseY) {
     for (let indice = 0; indice < fasesDoJogo.length; indice++) {
         const faseVerificada = fasesDoJogo[indice]
         const distanciaNoX = posicaoMouseX - faseVerificada.posicaoX
@@ -45,25 +45,13 @@ function desenharMapa() {
     contexto.fillStyle = 'rgba(0, 0, 10, 0.30)'
     contexto.fillRect(0, 0, 800, 560)
 
-    // ── Linhas de conexão entre fases ──
-    for (let i = 0; i < fasesDoJogo.length - 1; i++) {
-        const faseAtualNaLinha = fasesDoJogo[i]
-        const proximaFaseNaLinha = fasesDoJogo[i + 1]
-        contexto.beginPath()
-        contexto.moveTo(faseAtualNaLinha.posicaoX, faseAtualNaLinha.posicaoY)
-        contexto.lineTo(proximaFaseNaLinha.posicaoX, proximaFaseNaLinha.posicaoY)
-        contexto.strokeStyle = fasesJaCompletadas[i] ? 'rgba(255, 220, 80, 0.45)' : 'rgba(255,255,255,0.10)'
-        contexto.lineWidth = 2
-        contexto.stroke()
-    }
-
     // ── Botões de fase (agora são apenas imagens) ──
     for (let i = 0; i < fasesDoJogo.length; i++) {
         const faseASerDesenhada = fasesDoJogo[i]
         const aFaseEstaDesbloqueada = i === 0 || fasesJaCompletadas[i - 1]
         const centroDaImagemHeroiX = personagemNoMapa.posicaoX + personagemNoMapa.largura / 2
         const centroDaImagemHeroiY = personagemNoMapa.posicaoY + personagemNoMapa.altura / 2
-        const oHeroiEstaNessaFase = verificarQualFaseEstaNoPonto(centroDaImagemHeroiX, centroDaImagemHeroiY) === i && aFaseEstaDesbloqueada
+        const oHeroiEstaNessaFase = verificarFase(centroDaImagemHeroiX, centroDaImagemHeroiY) === i && aFaseEstaDesbloqueada
 
         // Se estiver bloqueada, desenha com transparência
         if (!aFaseEstaDesbloqueada) {
