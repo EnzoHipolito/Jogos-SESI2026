@@ -1,8 +1,8 @@
 // ─── Dados das 3 fases ───────────────────────
 const fasesDoJogo = [
-    { idFase: 0, posicaoX: 200, posicaoY: 280, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: 'assets/disco.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 3 },
-    { idFase: 1, posicaoX: 400, posicaoY: 280, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: 'assets/disco2.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 3 },
-    { idFase: 2, posicaoX: 600, posicaoY: 280, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: 'assets/disco3.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 3 },
+    { idFase: 0, posicaoX: 200, posicaoY: 280, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: 'assets/disco.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 5 },
+    { idFase: 1, posicaoX: 400, posicaoY: 280, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: 'assets/disco2.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 5 },
+    { idFase: 2, posicaoX: 600, posicaoY: 280, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: 'assets/disco3.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 4 },
 ]
 
 // ─── Progresso global (quais fases foram completadas)
@@ -41,10 +41,6 @@ function desenharMapa() {
         contexto.fillRect(0, 0, 800, 560)
     }
 
-    // Overlay escuro para dar contraste
-    contexto.fillStyle = 'rgba(0, 0, 10, 0.30)'
-    contexto.fillRect(0, 0, 800, 560)
-
     // ── Botões de fase (agora são apenas imagens) ──
     for (let i = 0; i < fasesDoJogo.length; i++) {
         const faseASerDesenhada = fasesDoJogo[i]
@@ -61,7 +57,7 @@ function desenharMapa() {
         // Desenha a imagem (usando pegarImagem do Util.js)
         contexto.drawImage(pegarImagem(faseASerDesenhada.imagemDoBotao), faseASerDesenhada.posicaoX - 30, faseASerDesenhada.posicaoY - 30, 60, 60)
 
-        contexto.globalAlpha = 1 // reseta a transparência
+        // contexto.globalAlpha = 1 // reseta a transparência
 
         // Label: nome e dificuldade
         const posicaoYTextosBaixo = faseASerDesenhada.posicaoY + 30 + 14
