@@ -61,14 +61,71 @@ class Nave extends ObjetoDoJogo {
     constructor(posicaoX, posicaoY, largura, altura, imagemSrc) {
         super(posicaoX, posicaoY, largura, altura, imagemSrc);
         this.direcaoDeMovimento = 0;
+        this.direcaoDeMovimentoX = 0;
         this.pontos = 0;
         this.vida = 5;
     }
 
     mover() {
         this.posicaoY += this.direcaoDeMovimento;
+        this.posicaoX += this.direcaoDeMovimentoX;
         if (this.posicaoY <= 0)   this.posicaoY = 0;
         if (this.posicaoY >= 560 - this.altura) this.posicaoY = 560 - this.altura;
+    }
+}
+
+// ─── Personagem com física de plataforma ───
+/**
+ * Personagem controlável com gravidade, pulo e movimento horizontal.
+ * Usa a borda inferior do canvas como chão.
+ */
+class Personagem extends ObjetoDoJogo {
+    constructor(posicaoX, posicaoY, largura, altura, imagemSrc) {
+        super(posicaoX, posicaoY, largura, altura, imagemSrc);
+        this.pontos = 0;
+        this.vida = 5;
+        this.velocidadeX = 0;        
+        this.velocidadeY = 0;        
+        this.gravidade = 0.5;        
+        this.forcaDoPulo = -12;      
+        this.velocidadeMovimento = 4; 
+        this.noChao = false;         
+    }
+
+    /**
+     * Aplica gravidade e move o personagem.
+     * Detecta colisão com o chão (borda inferior do canvas).
+     */
+    mover() {
+        this.velocidadeY += this.gravidade;
+
+        this.posicaoY += this.velocidadeY;
+
+        const chao = 500 - this.altura;
+        if (this.posicaoY >= chao) {
+            this.posicaoY = chao;
+            this.velocidadeY = 0;
+            this.noChao = true;
+        } else {
+            this.noChao = false;
+        }
+
+        // Mover horizontalmente
+        this.posicaoX += this.velocidadeX;
+
+        // Limites horizontais da tela
+        if (this.posicaoX < 0) this.posicaoX = 0;
+        if (this.posicaoX > 800 - this.largura) this.posicaoX = 800 - this.largura;
+    }
+
+    /**
+     * Inicia o pulo apenas se estiver no chão.
+     */
+    pular() {
+        if (this.noChao) {
+            this.velocidadeY = this.forcaDoPulo;
+            this.noChao = false;
+        }
     }
 }
 

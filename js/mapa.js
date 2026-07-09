@@ -12,8 +12,8 @@ document.addEventListener('keydown', (eventoTeclado) => {
     if (eventoTeclado.key === 'Enter') {
         let centroDaImagemHeroiX = personagemNoMapa.posicaoX + personagemNoMapa.largura / 2
         let centroDaImagemHeroiY = personagemNoMapa.posicaoY + personagemNoMapa.altura / 2
-        let identificadorDaFaseNoPonto = verificarQualFaseEstaNoPonto(centroDaImagemHeroiX, centroDaImagemHeroiY)
-
+        let identificadorDaFaseNoPonto = verificarFase(centroDaImagemHeroiX, centroDaImagemHeroiY)
+        
         if (identificadorDaFaseNoPonto >= 0) {
             const faseEstaLiberadaParaJogar = identificadorDaFaseNoPonto === 0 || fasesJaCompletadas[identificadorDaFaseNoPonto - 1]
             if (faseEstaLiberadaParaJogar) {
@@ -35,12 +35,12 @@ document.addEventListener('keyup', (eventoTeclado) => {
     if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') if (personagemNoMapa.direcaoY > 0) personagemNoMapa.direcaoY = 0
 })
 
-function rodarTickDoJogoPrincipal() {
+function principal() {
     contexto.clearRect(0, 0, 800, 560)
     desenharMapa()
     personagemNoMapa.mover()
     personagemNoMapa.desenharObjeto()
-    requestAnimationFrame(rodarTickDoJogoPrincipal)
+    requestAnimationFrame(principal)
 }
 
-rodarTickDoJogoPrincipal()
+principal()

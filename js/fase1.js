@@ -12,10 +12,8 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 // ─── Objetos Básicos ─────────────────────────
 // Utilizando um background estático que não se repete
 let fundoDoCenario = new Fundo(0, 0, 800, 560, 'assets/bacgroundFase1.png')
-let naveDoJogador = new Nave(50, 270, 130, 80, 'assets/personagens_inicio.png') // Ajustei a largura/altura para nave deitada
+let naveDoJogador = new Personagem(50, 270, 130, 80, 'assets/personagens_inicio.png') // Personagem com física de plataforma
 
-let textoFixoDePontos = new Texto()
-let textoComValorDePontos = new Texto()
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
 const audioMotorDaNave = new Audio('assets/nave_som.mp3')
@@ -55,22 +53,15 @@ let bossDaFase = {
     vidaMaximaDoBoss: 0,
     contadorDeTiro: 0,
 
-    /**
-     * Inicializa o boss no começo da fase.
-     * A vida do boss é igual aos pontos necessários para vencer.
-     */
     iniciar() {
         this.posicaoX = 620
         this.posicaoY = 200
         this.direcaoVertical = 1
-        this.vidaMaximaDoBoss = configuracaoDaFase.pontosParaVencer
+        this.vidaMaximaDoBoss = 5
         this.vidaDoBoss = this.vidaMaximaDoBoss
         this.contadorDeTiro = 0
     },
 
-    /**
-     * Move o boss devagar pra cima e pra baixo, quicando nas bordas.
-     */
     mover() {
         this.posicaoY += this.velocidade * this.direcaoVertical
         if (this.posicaoY <= 10) {
@@ -129,8 +120,18 @@ let cooldownDeColisao = 0
 
 document.addEventListener('keydown', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
-        if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = -5
-        if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 5
+        // Movimento horizontal
+        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft')  naveDoJogador.velocidadeX = -naveDoJogador.velocidadeMovimento
+        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') naveDoJogador.velocidadeX =  naveDoJogador.velocidadeMovimento
+        // Pulo
+        if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp' || eventoTeclado.key === ' ') {
+            eventoTeclado.preventDefault()
+            naveDoJogador.pular()
+        }
+        // Disparo
+        if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
+            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 4, 16, 8, 'red'))
+        }
     }
     else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
         if (eventoTeclado.key === 'Enter') {
@@ -145,30 +146,20 @@ document.addEventListener('keydown', (eventoTeclado) => {
 
 document.addEventListener('keyup', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
-        if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = 0
-        if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 0
+        // Para movimento horizontal ao soltar a tecla
+        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft')  naveDoJogador.velocidadeX = 0
+        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') naveDoJogador.velocidadeX = 0
     }
 })
 
-document.addEventListener('keypress', (eventoTeclado) => {
-    if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
-    if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
-        listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 4, 16, 8, 'red'))
-    }
-})
-
-// ─── Lógica ──────────────────────────────────
-
-/**
- * Função responsável por inicializar todas as variáveis de estado antes de começar a fase.
- * Reseta pontos, vidas, posição inicial da nave e listas de inimigos e tiros.
- */
 function iniciarFase() {
-    naveDoJogador.pontos = 0
     naveDoJogador.vida = configuracaoDaFase.vidasDaFase
     naveDoJogador.posicaoX = 50
     naveDoJogador.posicaoY = 245
-    naveDoJogador.direcaoDeMovimento = 0
+    // Resetar física do personagem
+    naveDoJogador.velocidadeX = 0
+    naveDoJogador.velocidadeY = 0
+    naveDoJogador.noChao = false
     listaDeTirosDisparados = []
     listaDeTirosDoBoss = []
     bossDaFase.iniciar()
@@ -205,7 +196,6 @@ function conferirTirosNoBoss() {
         if (bossDaFase.colidiuCom(tiroDisparadoAgora)) {
             listaDeTirosDisparados.splice(listaDeTirosDisparados.indexOf(tiroDisparadoAgora), 1)
             bossDaFase.vidaDoBoss -= 1
-            naveDoJogador.pontos += 1
         }
     })
 }
@@ -238,10 +228,6 @@ function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 400, 320)
 }
 
-/**
- * Renderiza todos os objetos da fase na tela a cada frame (cenários, nave, tiros, inimigos).
- * Também desenha a interface de usuário (HUD) com pontos e vidas.
- */
 function desenharGraficosDoNivel() {
     fundoDoCenario.desenharObjeto()
     naveDoJogador.desenharObjeto()
@@ -249,10 +235,8 @@ function desenharGraficosDoNivel() {
     listaDeTirosDoBoss.forEach((tiro) => tiro.desenharTiro())
     bossDaFase.desenharObjeto()
 
-    textoFixoDePontos.desenharTexto('Pontos:', 20, 40, 'white', '30px Georgia')
-    textoComValorDePontos.desenharTexto(`${naveDoJogador.pontos}/${configuracaoDaFase.pontosParaVencer}`, 130, 40, 'white', '30px Georgia')
     textoFixoDeVidas.desenharTexto('Vidas:', 640, 40, 'white', '30px Georgia')
-    textoComValorDeVidas.desenharTexto(naveDoJogador.vida, 740, 40, 'white', '30px Georgia')
+    textoComValorDeVidas.desenharTexto(naveDoJogador.vida, 740, 40, 'red', '30px Georgia')
 
     // Instrução ESC
     contexto.textAlign = 'center'
@@ -261,11 +245,6 @@ function desenharGraficosDoNivel() {
     contexto.fillText('Pressione [ESC] para voltar ao Mapa', 400, 540)
 }
 
-/**
- * Atualiza o estado lógico de todos os objetos em tela.
- * Movimenta nave, gerencia posição de tiros e inimigos.
- * Também checa se o jogador perdeu todas as vidas ou atingiu os pontos necessários.
- */
 function atualizarCalculosDoNivel() {
     naveDoJogador.mover()
     gerenciadorDeTiros.atualizarPosicoes()
@@ -287,7 +266,7 @@ function atualizarCalculosDoNivel() {
         mensagemDeResultado = 'DERROTA!'
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
         audioMotorDaNave.pause()
-    } else if (naveDoJogador.pontos >= configuracaoDaFase.pontosParaVencer) {
+    } else if (bossDaFase.vidaDoBoss == 0) {
         mensagemDeResultado = 'VITÓRIA!'
         fasesJaCompletadas[ID_DA_FASE] = true
         salvarProgresso() // Salva as fases destravadas no localStorage
@@ -296,11 +275,7 @@ function atualizarCalculosDoNivel() {
     }
 }
 
-/**
- * Função principal (Game Loop). Roda continuamente a cada frame renderizado pelo navegador.
- * Limpa o canvas e chama as funções de desenho e atualização de acordo com o estado do jogo.
- */
-function rodarTickDoJogoPrincipal() {
+function principal() {
     contexto.clearRect(0, 0, 800, 560)
 
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
@@ -312,8 +287,8 @@ function rodarTickDoJogoPrincipal() {
         desenharTelaDeVitoriaOuDerrota() // Desenha tela de vitória/derrota por cima
     }
 
-    requestAnimationFrame(rodarTickDoJogoPrincipal)
+    requestAnimationFrame(principal)
 }
 
 iniciarFase()
-rodarTickDoJogoPrincipal()
+principal()
