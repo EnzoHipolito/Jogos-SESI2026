@@ -57,7 +57,7 @@ function desenharMapa() {
         // Desenha a imagem (usando pegarImagem do Util.js)
         contexto.drawImage(pegarImagem(faseASerDesenhada.imagemDoBotao), faseASerDesenhada.posicaoX - 30, faseASerDesenhada.posicaoY - 30, 60, 60)
 
-        // contexto.globalAlpha = 1 // reseta a transparência
+        contexto.globalAlpha = 1 // reseta a transparência
 
         // Label: nome e dificuldade
         const posicaoYTextosBaixo = faseASerDesenhada.posicaoY + 30 + 14
