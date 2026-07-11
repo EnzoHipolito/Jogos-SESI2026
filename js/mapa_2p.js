@@ -17,8 +17,8 @@ document.addEventListener('keydown', (eventoTeclado) => {
         if (identificadorDaFaseNoPonto >= 0) {
             const faseEstaLiberadaParaJogar = identificadorDaFaseNoPonto === 0 || fasesJaCompletadas[identificadorDaFaseNoPonto - 1]
             if (faseEstaLiberadaParaJogar) {
-                // Redirecionar para o HTML da fase
-                window.location.href = "fase" + (identificadorDaFaseNoPonto + 1) + ".html"
+                // Redirecionar para o HTML da fase 2 jogadores
+                window.location.href = "fase" + (identificadorDaFaseNoPonto + 1) + "_2p.html"
             }
         }
     }
@@ -40,6 +40,13 @@ function principal() {
     desenharMapa()
     personagemNoMapa.mover()
     personagemNoMapa.desenharObjeto()
+
+    // Indicador de modo 2 jogadores
+    contexto.textAlign = 'center'
+    contexto.font = 'bold 16px Arial'
+    contexto.fillStyle = '#00eeff'
+    contexto.fillText('MODO 2 JOGADORES', 400, 70)
+
     requestAnimationFrame(principal)
 }
 
