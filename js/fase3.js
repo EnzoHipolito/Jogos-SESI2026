@@ -8,7 +8,7 @@ let mensagemDeResultado = ''
 let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 
 let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/backgroundFase3.png')
-let naveDoJogador = new Nave(50, 270, 130, 80, '../assets/personagens_inicio.png') 
+let naveDoJogador = new Nave(50, 270, 130, 80, '../assets/personagens_inicio.png') // Avião com todos os personagens
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()

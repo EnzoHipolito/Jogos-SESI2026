@@ -14,10 +14,10 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/bacgroundFase1.png')
 
 // ─── JOGADOR 1 (Bombhead) — WASD + Z/L para atirar ───
-let naveDoJogador = new Personagem(50, 270, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
+let naveDoJogador = new PersonagemAnimado(50, 270, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead (9-13)
 
 // ─── JOGADOR 2 (Bombhat) — Setinhas + Enter para atirar ───
-let naveDoJogador2 = new Personagem(50, 370, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
+let naveDoJogador2 = new PersonagemAnimado(50, 370, 100, 120, '../assets/Bombhat/') // Bombhat (14-18)
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()

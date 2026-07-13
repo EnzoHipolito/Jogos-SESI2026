@@ -12,7 +12,20 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 // ─── Objetos Básicos ─────────────────────────
 // Utilizando um background estático que não se repete
 let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/backgroundFase2.png')
-let naveDoJogador = new Personagem(50, 270, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
+let naveDoJogador = new PersonagemAnimado(180, 100, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead sprites (9-13)
+naveDoJogador.forcaDoPulo = -16; // Pulo maior para a Fase 2
+naveDoJogador.temChao = false; // Se cair da nuvem, morre
+
+// Plataformas (Nuvens) mapeadas do backgroundFase2.png
+let nuvensDaFase = [
+    new Plataforma(0, 125, 100, 20),    // Topo Esquerda
+    new Plataforma(310, 215, 100, 20),  // Perto do topo da torre (Esquerda)
+    new Plataforma(170, 295, 100, 20),  // Meio Esquerda
+    new Plataforma(240, 472, 110, 20),  // Baixo Esquerda
+    new Plataforma(530, 295, 100, 20),  // Meio Direita
+    new Plataforma(620, 455, 100, 20),  // Baixo Direita
+    new Plataforma(720, 165, 80, 20)    // Topo Direita
+]
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
@@ -101,9 +114,9 @@ let bossDaFase = {
      */
     colidiuCom(outroObjeto) {
         return (this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
-               (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
-               (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
-               (this.posicaoY + this.altura > outroObjeto.posicaoY)
+            (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
+            (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
+            (this.posicaoY + this.altura > outroObjeto.posicaoY)
     },
 
     /**
@@ -124,8 +137,8 @@ let cooldownDeColisao = 0
 document.addEventListener('keydown', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         // Movimento horizontal
-        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft')  naveDoJogador.velocidadeX = -naveDoJogador.velocidadeMovimento
-        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') naveDoJogador.velocidadeX =  naveDoJogador.velocidadeMovimento
+        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') naveDoJogador.velocidadeX = -naveDoJogador.velocidadeMovimento
+        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') naveDoJogador.velocidadeX = naveDoJogador.velocidadeMovimento
         // Pulo
         if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp' || eventoTeclado.key === ' ') {
             eventoTeclado.preventDefault()
@@ -150,7 +163,7 @@ document.addEventListener('keydown', (eventoTeclado) => {
 document.addEventListener('keyup', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         // Para movimento horizontal ao soltar a tecla
-        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft')  naveDoJogador.velocidadeX = 0
+        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') naveDoJogador.velocidadeX = 0
         if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') naveDoJogador.velocidadeX = 0
     }
 })
@@ -233,6 +246,7 @@ function desenharTelaDeVitoriaOuDerrota() {
 
 function desenharGraficosDoNivel() {
     fundoDoCenario.desenharObjeto()
+    nuvensDaFase.forEach(nuvem => nuvem.desenharObjeto()) // Invisível, mas útil para debug
     naveDoJogador.desenharObjeto()
     gerenciadorDeTiros.desenharNaTela()
     listaDeTirosDoBoss.forEach((tiro) => tiro.desenharTiro())
@@ -249,9 +263,21 @@ function desenharGraficosDoNivel() {
 }
 
 function atualizarCalculosDoNivel() {
-    naveDoJogador.mover()
+    naveDoJogador.mover(nuvensDaFase)
+
+    // Se o jogador cair do mapa (passar do final da tela)
+    if (naveDoJogador.posicaoY > 560 && naveDoJogador.vida > 0) {
+        naveDoJogador.vida -= 1;
+        if (naveDoJogador.vida > 0) {
+            // Respawn
+            naveDoJogador.posicaoX = 180;
+            naveDoJogador.posicaoY = 100;
+            naveDoJogador.velocidadeY = 0;
+        }
+    }
+
     gerenciadorDeTiros.atualizarPosicoes()
-    
+
     bossDaFase.mover()
     bossDaFase.atirar()
     listaDeTirosDoBoss.forEach((tiro) => {

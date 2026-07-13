@@ -12,7 +12,7 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 // ─── Objetos Básicos ─────────────────────────
 // Utilizando um background estático que não se repete
 let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/bacgroundFase1.png')
-let naveDoJogador = new Personagem(50, 270, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
+let naveDoJogador = new PersonagemAnimado(50, 270, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead sprites (9-13)
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()

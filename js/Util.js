@@ -90,24 +90,58 @@ class Personagem extends ObjetoDoJogo {
         this.forcaDoPulo = -12;      
         this.velocidadeMovimento = 4; 
         this.noChao = false;         
+        this.temChao = true;
     }
 
     /**
      * Aplica gravidade e move o personagem.
-     * Detecta colisão com o chão (borda inferior do canvas).
+     * Detecta colisão com o chão e com plataformas opcionais (quando caindo).
      */
-    mover() {
+    mover(plataformas = []) {
         this.velocidadeY += this.gravidade;
 
-        this.posicaoY += this.velocidadeY;
+        let proximaPosicaoY = this.posicaoY + this.velocidadeY;
+        let emPlataforma = false;
 
-        const chao = 500 - this.altura;
-        if (this.posicaoY >= chao) {
-            this.posicaoY = chao;
-            this.velocidadeY = 0;
-            this.noChao = true;
+        // Se estiver caindo (velocidadeY > 0), verifica colisão com plataformas (nuvens)
+        if (this.velocidadeY > 0) {
+            let margemX = 35; // Desconta 35px de cada lado (espaço transparente da imagem) para a colisão do pé
+            for (let plat of plataformas) {
+                // Checa se está horizontalmente dentro da plataforma (usando a margem)
+                if (this.posicaoX + this.largura - margemX > plat.posicaoX && this.posicaoX + margemX < plat.posicaoX + plat.largura) {
+                    let peAtual = this.posicaoY + this.altura;
+                    let peFuturo = proximaPosicaoY + this.altura;
+                    // Se o pé vai atravessar a plataforma neste frame
+                    if (peAtual <= plat.posicaoY && peFuturo >= plat.posicaoY) {
+                        proximaPosicaoY = plat.posicaoY - this.altura;
+                        this.velocidadeY = 0;
+                        emPlataforma = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        this.posicaoY = proximaPosicaoY;
+
+        if (this.temChao) {
+            const chao = 500 - this.altura;
+            if (this.posicaoY >= chao) {
+                this.posicaoY = chao;
+                this.velocidadeY = 0;
+                this.noChao = true;
+            } else if (emPlataforma) {
+                this.noChao = true;
+            } else {
+                this.noChao = false;
+            }
         } else {
-            this.noChao = false;
+            // Fase 2: Não tem chão, se errar a nuvem ele cai
+            if (emPlataforma) {
+                this.noChao = true;
+            } else {
+                this.noChao = false;
+            }
         }
 
         // Mover horizontalmente
@@ -126,6 +160,150 @@ class Personagem extends ObjetoDoJogo {
             this.velocidadeY = this.forcaDoPulo;
             this.noChao = false;
         }
+    }
+}
+
+/**
+ * Plataforma invisível (Nuvem) que o personagem pode pular em cima.
+ */
+class Plataforma extends ObjetoDoJogo {
+    constructor(posicaoX, posicaoY, largura, altura) {
+        super(posicaoX, posicaoY, largura, altura, null);
+    }
+    desenharObjeto() {
+        // As nuvens já estão desenhadas na imagem de fundo, 
+        // mas caso queira depurar (ver as caixas):
+        // contexto.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        // contexto.fillRect(this.posicaoX, this.posicaoY, this.largura, this.altura);
+    }
+}
+
+// ─── Personagem Animado (Bombhat) ───────────
+/**
+ * Herda de Personagem e adiciona animação de sprites.
+ * Sprites: 14.png (idle), 15-18.png (corrida, 4 frames).
+ * Inverte horizontalmente quando corre para a esquerda.
+ */
+class PersonagemAnimado extends Personagem {
+    constructor(posicaoX, posicaoY, largura, altura, pastaSprites, idleFile = '14.png', runFiles = ['15.png', '16.png', '17.png', '18.png']) {
+        // Passa null como imagemSrc pois vamos controlar o desenho manualmente
+        super(posicaoX, posicaoY, largura, altura, null);
+        this.pastaSprites = pastaSprites; // ex: '../assets/Bombhat/'
+
+        // Sprites disponíveis
+        this.spriteIdle      = this.pastaSprites + idleFile;
+        this.spritesCorrend  = runFiles.map(file => this.pastaSprites + file);
+
+        // Estado de animação
+        this.frameAtual       = 0;          // índice do frame de corrida atual
+        this.contadorFrame    = 0;          // contador de ticks para trocar frame
+        this.velocidadeFrame  = 6;          // a cada 6 ticks troca o frame
+        this.olhandoParaDireita = true;     // direção que o sprite está virado
+    }
+
+    /**
+     * Sobrescreve o mover para também atualizar a animação.
+     */
+    mover(plataformas = []) {
+        super.mover(plataformas);
+
+        // Se o personagem estiver se movendo horizontalmente, anima a corrida
+        if (this.velocidadeX > 0) this.olhandoParaDireita = true;
+        if (this.velocidadeX < 0) this.olhandoParaDireita = false;
+
+        // Avança frame de corrida apenas se estiver se movendo no chão
+        if (this.velocidadeX !== 0 && this.noChao) {
+            this.contadorFrame++;
+            if (this.contadorFrame >= this.velocidadeFrame) {
+                this.contadorFrame = 0;
+                this.frameAtual = (this.frameAtual + 1) % this.spritesCorrend.length;
+            }
+        } else if (this.velocidadeX === 0 && this.noChao) {
+            // Parado no chão → resetar animação de corrida
+            this.frameAtual    = 0;
+            this.contadorFrame = 0;
+        }
+    }
+
+    /**
+     * Escolhe o sprite correto e desenha, espelhando se necessário.
+     */
+    desenharObjeto() {
+        let srcSprite;
+
+        if (!this.noChao) {
+            // No ar (pulando ou caindo) → frame do meio da corrida (frame 1)
+            srcSprite = this.spritesCorrend[1];
+        } else if (this.velocidadeX !== 0) {
+            // Correndo → anima frames 15-18
+            srcSprite = this.spritesCorrend[this.frameAtual];
+        } else {
+            // Parado → idle (14)
+            srcSprite = this.spriteIdle;
+        }
+
+        const img = pegarImagem(srcSprite);
+
+        if (this.olhandoParaDireita) {
+            // Desenho normal
+            contexto.drawImage(img, this.posicaoX, this.posicaoY, this.largura, this.altura);
+        } else {
+            // Espelha horizontalmente para a esquerda
+            contexto.save();
+            contexto.translate(this.posicaoX + this.largura, this.posicaoY);
+            contexto.scale(-1, 1);
+            contexto.drawImage(img, 0, 0, this.largura, this.altura);
+            contexto.restore();
+        }
+    }
+}
+
+// ─── Nave Animada (Bombhat – modo vertical fase 3) ─
+/**
+ * Herda de Nave e usa os sprites do Bombhat com animação flutuante.
+ * Fase 3 usa movimento vertical, então o sprite sempre olha para a direita.
+ * Anima os frames 15-18 enquanto se move, e idle (14) quando parado.
+ */
+class NaveAnimada extends Nave {
+    constructor(posicaoX, posicaoY, largura, altura, pastaSprites) {
+        super(posicaoX, posicaoY, largura, altura, null);
+        this.pastaSprites = pastaSprites;
+
+        this.spriteIdle     = this.pastaSprites + '14.png';
+        this.spritesMovend  = [
+            this.pastaSprites + '15.png',
+            this.pastaSprites + '16.png',
+            this.pastaSprites + '17.png',
+            this.pastaSprites + '18.png',
+        ];
+
+        this.frameAtual      = 0;
+        this.contadorFrame   = 0;
+        this.velocidadeFrame = 6;
+    }
+
+    mover() {
+        super.mover();
+
+        // Avança animação enquanto se move verticalmente
+        if (this.direcaoDeMovimento !== 0) {
+            this.contadorFrame++;
+            if (this.contadorFrame >= this.velocidadeFrame) {
+                this.contadorFrame = 0;
+                this.frameAtual = (this.frameAtual + 1) % this.spritesMovend.length;
+            }
+        } else {
+            this.frameAtual    = 0;
+            this.contadorFrame = 0;
+        }
+    }
+
+    desenharObjeto() {
+        const srcSprite = (this.direcaoDeMovimento !== 0)
+            ? this.spritesMovend[this.frameAtual]
+            : this.spriteIdle;
+
+        contexto.drawImage(pegarImagem(srcSprite), this.posicaoX, this.posicaoY, this.largura, this.altura);
     }
 }
 

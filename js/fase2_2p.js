@@ -14,10 +14,27 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/backgroundFase2.png')
 
 // ─── JOGADOR 1 (Bombhead) — WASD + Z/L para atirar ───
-let naveDoJogador = new Personagem(50, 270, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
+let naveDoJogador = new PersonagemAnimado(20, 0, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead (9-13)
 
 // ─── JOGADOR 2 (Bombhat) — Setinhas + Enter para atirar ───
-let naveDoJogador2 = new Personagem(50, 370, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
+let naveDoJogador2 = new PersonagemAnimado(200, 0, 100, 120, '../assets/Bombhat/') // Bombhat (14-18)
+
+// Aumenta o pulo apenas para a Fase 2, para alcançarem as nuvens
+naveDoJogador.forcaDoPulo = -16;
+naveDoJogador2.forcaDoPulo = -16;
+naveDoJogador.temChao = false;
+naveDoJogador2.temChao = false;
+
+// Plataformas (Nuvens) mapeadas do backgroundFase2.png
+let nuvensDaFase = [
+    new Plataforma(0, 125, 100, 20),    // Topo Esquerda
+    new Plataforma(310, 190, 100, 20),  // Perto do topo da torre (Esquerda)
+    new Plataforma(170, 295, 100, 20),  // Meio Esquerda
+    new Plataforma(240, 465, 110, 20),  // Baixo Esquerda
+    new Plataforma(530, 295, 100, 20),  // Meio Direita
+    new Plataforma(620, 455, 100, 20),  // Baixo Direita
+    new Plataforma(720, 165, 80, 20)    // Topo Direita
+]
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
@@ -121,9 +138,9 @@ let bossDaFase = {
      */
     colidiuCom(outroObjeto) {
         return (this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
-               (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
-               (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
-               (this.posicaoY + this.altura > outroObjeto.posicaoY)
+            (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
+            (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
+            (this.posicaoY + this.altura > outroObjeto.posicaoY)
     },
 
     /**
@@ -146,8 +163,8 @@ document.addEventListener('keydown', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         // ─── Controles Jogador 1 (WASD + Z/L) ───
         // Movimento horizontal
-        if (eventoTeclado.key === 'a')  naveDoJogador.velocidadeX = -naveDoJogador.velocidadeMovimento
-        if (eventoTeclado.key === 'd') naveDoJogador.velocidadeX =  naveDoJogador.velocidadeMovimento
+        if (eventoTeclado.key === 'a') naveDoJogador.velocidadeX = -naveDoJogador.velocidadeMovimento
+        if (eventoTeclado.key === 'd') naveDoJogador.velocidadeX = naveDoJogador.velocidadeMovimento
         // Pulo
         if (eventoTeclado.key === 'w') {
             eventoTeclado.preventDefault()
@@ -160,8 +177,8 @@ document.addEventListener('keydown', (eventoTeclado) => {
 
         // ─── Controles Jogador 2 (Setinhas + Enter) ───
         // Movimento horizontal
-        if (eventoTeclado.key === 'ArrowLeft')  naveDoJogador2.velocidadeX = -naveDoJogador2.velocidadeMovimento
-        if (eventoTeclado.key === 'ArrowRight') naveDoJogador2.velocidadeX =  naveDoJogador2.velocidadeMovimento
+        if (eventoTeclado.key === 'ArrowLeft') naveDoJogador2.velocidadeX = -naveDoJogador2.velocidadeMovimento
+        if (eventoTeclado.key === 'ArrowRight') naveDoJogador2.velocidadeX = naveDoJogador2.velocidadeMovimento
         // Pulo
         if (eventoTeclado.key === 'ArrowUp') {
             eventoTeclado.preventDefault()
@@ -186,10 +203,10 @@ document.addEventListener('keydown', (eventoTeclado) => {
 document.addEventListener('keyup', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         // Para movimento horizontal ao soltar a tecla — Jogador 1
-        if (eventoTeclado.key === 'a')  naveDoJogador.velocidadeX = 0
+        if (eventoTeclado.key === 'a') naveDoJogador.velocidadeX = 0
         if (eventoTeclado.key === 'd') naveDoJogador.velocidadeX = 0
         // Para movimento horizontal ao soltar a tecla — Jogador 2
-        if (eventoTeclado.key === 'ArrowLeft')  naveDoJogador2.velocidadeX = 0
+        if (eventoTeclado.key === 'ArrowLeft') naveDoJogador2.velocidadeX = 0
         if (eventoTeclado.key === 'ArrowRight') naveDoJogador2.velocidadeX = 0
     }
 })
@@ -307,6 +324,7 @@ function desenharTelaDeVitoriaOuDerrota() {
 
 function desenharGraficosDoNivel() {
     fundoDoCenario.desenharObjeto()
+    nuvensDaFase.forEach(nuvem => nuvem.desenharObjeto())
 
     if (naveDoJogador.vida > 0) naveDoJogador.desenharObjeto()
     if (naveDoJogador2.vida > 0) naveDoJogador2.desenharObjeto()
@@ -337,11 +355,29 @@ function desenharGraficosDoNivel() {
 }
 
 function atualizarCalculosDoNivel() {
-    if (naveDoJogador.vida > 0) naveDoJogador.mover()
-    if (naveDoJogador2.vida > 0) naveDoJogador2.mover()
+    if (naveDoJogador.vida > 0) naveDoJogador.mover(nuvensDaFase)
+    if (naveDoJogador2.vida > 0) naveDoJogador2.mover(nuvensDaFase)
+
+    // Lógica de morte ao cair das nuvens
+    if (naveDoJogador.posicaoY > 560 && naveDoJogador.vida > 0) {
+        naveDoJogador.vida -= 1;
+        if (naveDoJogador.vida > 0) {
+            naveDoJogador.posicaoX = 20;
+            naveDoJogador.posicaoY = 0;
+            naveDoJogador.velocidadeY = 0;
+        }
+    }
+    if (naveDoJogador2.posicaoY > 560 && naveDoJogador2.vida > 0) {
+        naveDoJogador2.vida -= 1;
+        if (naveDoJogador2.vida > 0) {
+            naveDoJogador2.posicaoX = 200;
+            naveDoJogador2.posicaoY = 0;
+            naveDoJogador2.velocidadeY = 0;
+        }
+    }
 
     gerenciadorDeTiros.atualizarPosicoes()
-    
+
     bossDaFase.mover()
     bossDaFase.atirar()
     listaDeTirosDoBoss.forEach((tiro) => {

@@ -10,10 +10,10 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/backgroundFase3.png')
 
 // ─── JOGADOR 1 (Bombhead) — WASD + Z/L para atirar ───
-let naveDoJogador = new Nave(50, 270, 130, 80, '../assets/personagens_inicio.png') 
+let naveDoJogador = new Nave(50, 200, 130, 80, '../assets/personagens_inicio.png') // Avião com personagens
 
 // ─── JOGADOR 2 (Bombhat) — Setinhas + Enter para atirar ───
-let naveDoJogador2 = new Nave(50, 370, 130, 80, '../assets/personagens_inicio.png') 
+let naveDoJogador2 = new Nave(50, 320, 130, 80, '../assets/personagens_inicio.png') // Avião com personagens
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
