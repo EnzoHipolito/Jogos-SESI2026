@@ -13,26 +13,10 @@ body {
     align-items: center;
     min-height: 100vh;
     overflow: hidden;
-    /* Impede scroll acidental com setas do teclado */
     overscroll-behavior: none;
 }
 
-#wrap {
-    position: relative;
-    width: 800px;
-    height: 560px;
-    /* Borda sutil ao redor da tela do jogo */
-    box-shadow:
-        0 0 0 2px rgba(100, 80, 200, 0.4),
-        0 0 40px rgba(80, 40, 160, 0.35),
-        0 0 80px rgba(40, 20, 80, 0.2);
-    border-radius: 4px;
-}
-
 canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
     display: block;
     border-radius: 4px;
 }
