@@ -7,8 +7,8 @@ let mensagemDeResultado = ''
 
 let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 
-let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/backgroundFase3.png')
-let naveDoJogador = new Nave(50, 270, 130, 80, '../assets/personagens_inicio.png') // Avião com todos os personagens
+let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/backgroundFase3.png')
+let naveDoJogador = new Nave(50, 270, 130, 80, '../assets/aviao_bombhead/bombhead_aviao.png') // Avião com todos os personagens
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
@@ -39,9 +39,9 @@ let gerenciadorDeTiros = {
 let bossDaFase = {
     posicaoX: 620,
     posicaoY: 200,
-    largura: 150,
-    altura: 150,
-    imagemSrc: '../assets/disco3.png',
+    largura: 250,
+    altura: 250,
+    imagemSrc: '../assets/aviao_vilao/31-removebg-preview.png',
     direcaoVertical: 1,
     velocidade: 2.5,
     vidaDoBoss: 0,
@@ -66,8 +66,8 @@ let bossDaFase = {
             this.posicaoY = 10
             this.direcaoVertical = 1
         }
-        if (this.posicaoY >= 560 - this.altura - 10) {
-            this.posicaoY = 560 - this.altura - 10
+        if (this.posicaoY >= 640 - this.altura - 10) {
+            this.posicaoY = 640 - this.altura - 10
             this.direcaoVertical = -1
         }
     },
@@ -99,7 +99,7 @@ let bossDaFase = {
         this.contadorDeTiro += 1
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
-            listaDeTirosDoBoss.push(new TiroBoss(this.posicaoX, this.posicaoY + this.altura / 2 - 4, 16, 8, 'red'))
+            listaDeTirosDoBoss.push(new TiroBoss(this.posicaoX, this.posicaoY + this.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao03.png'))
         }
     }
 }
@@ -132,7 +132,7 @@ document.addEventListener('keyup', (eventoTeclado) => {
 document.addEventListener('keypress', (eventoTeclado) => {
     if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
     if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
-        listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 4, 16, 8, 'red'))
+        listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
     }
 })
 
@@ -199,13 +199,13 @@ function conferirTirosDoBossNaNave() {
  */
 function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillStyle = 'rgba(0, 0, 0, 0.7)'
-    contexto.fillRect(0, 0, 800, 560)
+    contexto.fillRect(0, 0, 1024, 640)
     contexto.fillStyle = 'white'
     contexto.textAlign = 'center'
     contexto.font = 'bold 50px Arial'
-    contexto.fillText(mensagemDeResultado, 400, 260)
+    contexto.fillText(mensagemDeResultado, 512, 300)
     contexto.font = '20px Arial'
-    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 400, 320)
+    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
 }
 
 function desenharGraficosDoNivel() {
@@ -222,7 +222,7 @@ function desenharGraficosDoNivel() {
     contexto.textAlign = 'center'
     contexto.font = '14px Arial'
     contexto.fillStyle = 'rgba(255,255,255,0.7)'
-    contexto.fillText('Pressione [ESC] para voltar ao Mapa', 400, 540)
+    contexto.fillText('Pressione [ESC] para voltar ao Mapa', 512, 620)
 }
 
 function atualizarCalculosDoNivel() {
@@ -260,7 +260,7 @@ function atualizarCalculosDoNivel() {
  * Limpa o canvas e chama as funções de desenho e atualização de acordo com o estado do jogo.
  */
 function principal() {
-    contexto.clearRect(0, 0, 800, 560)
+    contexto.clearRect(0, 0, 1024, 640)
 
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         desenharGraficosDoNivel()

@@ -36,7 +36,7 @@ document.addEventListener('keyup', (eventoTeclado) => {
 })
 
 function principal() {
-    contexto.clearRect(0, 0, 800, 560)
+    contexto.clearRect(0, 0, 1024, 640)
     desenharMapa()
     personagemNoMapa.mover()
     personagemNoMapa.desenharObjeto()

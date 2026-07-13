@@ -50,9 +50,9 @@ class HeroiMapa extends ObjetoDoJogo {
         
         // Limites da tela
         if (this.posicaoX < 10) this.posicaoX = 10;
-        if (this.posicaoX > 800 - this.largura - 10) this.posicaoX = 800 - this.largura - 10;
+        if (this.posicaoX > 1024 - this.largura - 10) this.posicaoX = 800 - this.largura - 10;
         if (this.posicaoY < 10) this.posicaoY = 10;
-        if (this.posicaoY > 560 - this.altura - 10) this.posicaoY = 560 - this.altura - 10;
+        if (this.posicaoY > 640 - this.altura - 10) this.posicaoY = 640 - this.altura - 10;
     }
 }
 
@@ -70,7 +70,7 @@ class Nave extends ObjetoDoJogo {
         this.posicaoY += this.direcaoDeMovimento;
         this.posicaoX += this.direcaoDeMovimentoX;
         if (this.posicaoY <= 0)   this.posicaoY = 0;
-        if (this.posicaoY >= 560 - this.altura) this.posicaoY = 560 - this.altura;
+        if (this.posicaoY >= 640 - this.altura) this.posicaoY = 560 - this.altura;
     }
 }
 
@@ -149,7 +149,7 @@ class Personagem extends ObjetoDoJogo {
 
         // Limites horizontais da tela
         if (this.posicaoX < 0) this.posicaoX = 0;
-        if (this.posicaoX > 800 - this.largura) this.posicaoX = 800 - this.largura;
+        if (this.posicaoX > 1024 - this.largura) this.posicaoX = 800 - this.largura;
     }
 
     /**
@@ -322,11 +322,15 @@ class Disco extends ObjetoDoJogo {
 // ─── Tiro ──────────────────────────────────
 class Tiro extends ObjetoDoJogo {
     desenharTiro() {
-        contexto.fillStyle = '#00eeff';
-        contexto.shadowColor = '#00eeff';
-        contexto.shadowBlur = 8;
-        contexto.fillRect(this.posicaoX, this.posicaoY, this.largura, this.altura);
-        contexto.shadowBlur = 0;
+        if (this.imagemSrc && this.imagemSrc !== 'red') {
+            contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura);
+        } else {
+            contexto.fillStyle = '#00eeff';
+            contexto.shadowColor = '#00eeff';
+            contexto.shadowBlur = 8;
+            contexto.fillRect(this.posicaoX, this.posicaoY, this.largura, this.altura);
+            contexto.shadowBlur = 0;
+        }
     }
 
     mover() {
@@ -337,11 +341,15 @@ class Tiro extends ObjetoDoJogo {
 // ─── Tiro do Boss ──────────────────────────
 class TiroBoss extends ObjetoDoJogo {
     desenharTiro() {
-        contexto.fillStyle = '#ff3333';
-        contexto.shadowColor = '#ff3333';
-        contexto.shadowBlur = 8;
-        contexto.fillRect(this.posicaoX, this.posicaoY, this.largura, this.altura);
-        contexto.shadowBlur = 0;
+        if (this.imagemSrc && this.imagemSrc !== 'red') {
+            contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura);
+        } else {
+            contexto.fillStyle = '#ff3333';
+            contexto.shadowColor = '#ff3333';
+            contexto.shadowBlur = 8;
+            contexto.fillRect(this.posicaoX, this.posicaoY, this.largura, this.altura);
+            contexto.shadowBlur = 0;
+        }
     }
 
     mover() {
