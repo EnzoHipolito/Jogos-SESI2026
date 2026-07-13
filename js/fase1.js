@@ -11,13 +11,13 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 
 // ─── Objetos Básicos ─────────────────────────
 // Utilizando um background estático que não se repete
-let fundoDoCenario = new Fundo(0, 0, 800, 560, 'assets/bacgroundFase1.png')
-let naveDoJogador = new Personagem(50, 270, 130, 80, 'assets/personagens_inicio.png') // Personagem com física de plataforma
+let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/bacgroundFase1.png')
+let naveDoJogador = new Personagem(50, 270, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
-const audioMotorDaNave = new Audio('assets/nave_som.mp3')
-const audioDeColisao = new Audio('assets/batida.mp3')
+const audioMotorDaNave = new Audio('../assets/nave_som.mp3')
+const audioDeColisao = new Audio('../assets/batida.mp3')
 audioMotorDaNave.volume = 1.0
 audioMotorDaNave.loop = true
 audioDeColisao.volume = 0.7
@@ -46,7 +46,7 @@ let bossDaFase = {
     posicaoY: 200,
     largura: 150,
     altura: 150,
-    imagemSrc: 'assets/disco.png',
+    imagemSrc: '../assets/disco.png',
     direcaoVertical: 1,
     velocidade: 1.5,
     vidaDoBoss: 0,
