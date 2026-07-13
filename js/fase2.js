@@ -11,8 +11,21 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 
 // ─── Objetos Básicos ─────────────────────────
 // Utilizando um background estático que não se repete
-let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/backgroundFase2.png')
-let naveDoJogador = new Personagem(50, 270, 130, 80, '../assets/personagens_inicio.png') // Personagem com física de plataforma
+let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/backgroundFase2.png')
+let naveDoJogador = new PersonagemAnimado(250, 100, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead sprites (9-13)
+naveDoJogador.forcaDoPulo = -16; // Pulo maior para a Fase 2
+naveDoJogador.temChao = false; // Se cair da nuvem, morre
+
+// Plataformas (Nuvens) mapeadas do backgroundFase2.png
+let nuvensDaFase = [
+    new Plataforma(0, 143, 128, 20),    // Topo Esquerda
+    new Plataforma(397, 246, 128, 20),  // Perto do topo da torre (Esquerda)
+    new Plataforma(218, 337, 128, 20),  // Meio Esquerda
+    new Plataforma(307, 531, 141, 20),  // Baixo Esquerda
+    new Plataforma(621, 337, 128, 20),  // Meio Direita
+    new Plataforma(794, 520, 128, 20),  // Baixo Direita
+    new Plataforma(922, 189, 102, 20)    // Topo Direita
+]
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
@@ -44,9 +57,9 @@ let gerenciadorDeTiros = {
 let bossDaFase = {
     posicaoX: 620,
     posicaoY: 200,
-    largura: 150,
-    altura: 150,
-    imagemSrc: '../assets/disco2.png',
+    largura: 250,
+    altura: 250,
+    imagemSrc: '../assets/vilao_nuvem/vilao_nuvem1.png',
     direcaoVertical: 1,
     velocidade: 2.0,
     vidaDoBoss: 0,
@@ -71,8 +84,8 @@ let bossDaFase = {
             this.posicaoY = 10
             this.direcaoVertical = 1
         }
-        if (this.posicaoY >= 560 - this.altura - 10) {
-            this.posicaoY = 560 - this.altura - 10
+        if (this.posicaoY >= 640 - this.altura - 10) {
+            this.posicaoY = 640 - this.altura - 10
             this.direcaoVertical = -1
         }
     },
@@ -113,7 +126,7 @@ let bossDaFase = {
         this.contadorDeTiro += 1
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
-            listaDeTirosDoBoss.push(new TiroBoss(this.posicaoX, this.posicaoY + this.altura / 2 - 4, 16, 8, 'red'))
+            listaDeTirosDoBoss.push(new TiroBoss(this.posicaoX, this.posicaoY + this.altura / 2 - 15, 80, 80, '../assets/tiro_aviao_aviao/tiroaviao02.png'))
         }
     }
 }
@@ -133,7 +146,7 @@ document.addEventListener('keydown', (eventoTeclado) => {
         }
         // Disparo
         if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
-            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 4, 16, 8, 'red'))
+            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
         }
     }
     else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
@@ -222,17 +235,18 @@ function conferirTirosDoBossNaNave() {
  */
 function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillStyle = 'rgba(0, 0, 0, 0.7)'
-    contexto.fillRect(0, 0, 800, 560)
+    contexto.fillRect(0, 0, 1024, 640)
     contexto.fillStyle = 'white'
     contexto.textAlign = 'center'
     contexto.font = 'bold 50px Arial'
-    contexto.fillText(mensagemDeResultado, 400, 260)
+    contexto.fillText(mensagemDeResultado, 512, 300)
     contexto.font = '20px Arial'
-    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 400, 320)
+    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
 }
 
 function desenharGraficosDoNivel() {
     fundoDoCenario.desenharObjeto()
+    nuvensDaFase.forEach(nuvem => nuvem.desenharObjeto()) // Invisível, mas útil para debug
     naveDoJogador.desenharObjeto()
     gerenciadorDeTiros.desenharNaTela()
     listaDeTirosDoBoss.forEach((tiro) => tiro.desenharTiro())
@@ -245,11 +259,23 @@ function desenharGraficosDoNivel() {
     contexto.textAlign = 'center'
     contexto.font = '14px Arial'
     contexto.fillStyle = 'rgba(255,255,255,0.7)'
-    contexto.fillText('Pressione [ESC] para voltar ao Mapa', 400, 540)
+    contexto.fillText('Pressione [ESC] para voltar ao Mapa', 512, 620)
 }
 
 function atualizarCalculosDoNivel() {
-    naveDoJogador.mover()
+    naveDoJogador.mover(nuvensDaFase)
+
+    // Se o jogador cair do mapa (passar do final da tela)
+    if (naveDoJogador.posicaoY > 640 && naveDoJogador.vida > 0) {
+        naveDoJogador.vida -= 1;
+        if (naveDoJogador.vida > 0) {
+            // Respawn
+            naveDoJogador.posicaoX = 250;
+            naveDoJogador.posicaoY = 100;
+            naveDoJogador.velocidadeY = 0;
+        }
+    }
+
     gerenciadorDeTiros.atualizarPosicoes()
     
     bossDaFase.mover()
@@ -279,7 +305,7 @@ function atualizarCalculosDoNivel() {
 }
 
 function principal() {
-    contexto.clearRect(0, 0, 800, 560)
+    contexto.clearRect(0, 0, 1024, 640)
 
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         desenharGraficosDoNivel()
