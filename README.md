@@ -4,7 +4,7 @@
 
 ## 1. Identificação do Projeto
 - **Título do Projeto:** BombHead
-- **Identificação do Desenvolvedor:** Bernardo Rodrigues
+- **Identificação dos Desenvolvedores:** Bernardo Rodrigues, Santiago Fidmay, Enzo dos Santos Hipolito, Matheus O. Reis
 
 ## 2. Visão Geral do Sistema
 - **Descrição:** Game de tiro/plataforma 2D desenvolvido em JavaScript Vanilla com HTML5 Canvas. Trata-se de um estudo de caso prático para a disciplina de Programação Orientada a Objetos.
