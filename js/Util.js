@@ -9,6 +9,29 @@ function pegarImagem(caminhoDaImagem) {
     return _cacheDeImagens[caminhoDaImagem];
 }
 
+// ─── Utilitário de Colisão ────────────────────
+function verificarColisao(obj1, obj2) {
+    let margem1X = obj1.largura * 0.35;
+    let margem1Y = obj1.altura * 0.35;
+    let margem2X = obj2.largura * 0.35;
+    let margem2Y = obj2.altura * 0.35;
+
+    if (obj1.constructor.name === 'Tiro' || obj1.constructor.name === 'TiroBoss') { margem1X = obj1.largura * 0.25; margem1Y = obj1.altura * 0.25; }
+    if (obj2.constructor.name === 'Tiro' || obj2.constructor.name === 'TiroBoss') { margem2X = obj2.largura * 0.25; margem2Y = obj2.altura * 0.25; }
+
+    let b1X = obj1.posicaoX + margem1X;
+    let b1Y = obj1.posicaoY + margem1Y;
+    let b1W = obj1.largura - 2 * margem1X;
+    let b1H = obj1.altura - 2 * margem1Y;
+
+    let b2X = obj2.posicaoX + margem2X;
+    let b2Y = obj2.posicaoY + margem2Y;
+    let b2W = obj2.largura - 2 * margem2X;
+    let b2H = obj2.altura - 2 * margem2Y;
+
+    return (b1X < b2X + b2W) && (b1X + b1W > b2X) && (b1Y < b2Y + b2H) && (b1Y + b1H > b2Y);
+}
+
 // ─── Classe base: Objeto do Jogo ──────────────
 class ObjetoDoJogo {
     constructor(posicaoX, posicaoY, largura, altura, imagemSrc) {
@@ -24,14 +47,7 @@ class ObjetoDoJogo {
     }
 
     colidiuCom(outroObjeto) {
-        if ((this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
-            (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
-            (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
-            (this.posicaoY + this.altura > outroObjeto.posicaoY)) {
-            return true;
-        } else {
-            return false;
-        }
+        return verificarColisao(this, outroObjeto);
     }
 }
 
@@ -64,6 +80,7 @@ class Nave extends ObjetoDoJogo {
         this.direcaoDeMovimentoX = 0;
         this.pontos = 0;
         this.vida = 5;
+        this.cooldownTiro = 0;
     }
 
     mover() {
@@ -84,6 +101,7 @@ class Personagem extends ObjetoDoJogo {
         super(posicaoX, posicaoY, largura, altura, imagemSrc);
         this.pontos = 0;
         this.vida = 5;
+        this.cooldownTiro = 0;
         this.velocidadeX = 0;        
         this.velocidadeY = 0;        
         this.gravidade = 0.5;        
@@ -185,7 +203,7 @@ class Plataforma extends ObjetoDoJogo {
  * Inverte horizontalmente quando corre para a esquerda.
  */
 class PersonagemAnimado extends Personagem {
-    constructor(posicaoX, posicaoY, largura, altura, pastaSprites, idleFile = '14.png', runFiles = ['15.png', '16.png', '17.png', '18.png']) {
+    constructor(posicaoX, posicaoY, largura, altura, pastaSprites, idleFile = '14.png', runFiles = ['15.png', '16.png', '17.png', '18.png'], shootFile = null) {
         // Passa null como imagemSrc pois vamos controlar o desenho manualmente
         super(posicaoX, posicaoY, largura, altura, null);
         this.pastaSprites = pastaSprites; // ex: '../assets/Bombhat/'
@@ -193,6 +211,7 @@ class PersonagemAnimado extends Personagem {
         // Sprites disponíveis
         this.spriteIdle      = this.pastaSprites + idleFile;
         this.spritesCorrend  = runFiles.map(file => this.pastaSprites + file);
+        this.spriteAtirando  = shootFile ? this.pastaSprites + shootFile : null;
 
         // Estado de animação
         this.frameAtual       = 0;          // índice do frame de corrida atual
@@ -231,7 +250,10 @@ class PersonagemAnimado extends Personagem {
     desenharObjeto() {
         let srcSprite;
 
-        if (!this.noChao) {
+        if (this.spriteAtirando && this.cooldownTiro > 5) {
+            // Atirando
+            srcSprite = this.spriteAtirando;
+        } else if (!this.noChao) {
             // No ar (pulando ou caindo) → frame do meio da corrida (frame 1)
             srcSprite = this.spritesCorrend[1];
         } else if (this.velocidadeX !== 0) {
@@ -340,16 +362,25 @@ class Tiro extends ObjetoDoJogo {
 
 // ─── Tiro do Boss ──────────────────────────
 class TiroBoss extends ObjetoDoJogo {
-    constructor(posicaoX, posicaoY, largura, altura, imagemSrc, dano = 1, velocidade = 10, velocidadeY = 0) {
+    constructor(posicaoX, posicaoY, largura, altura, imagemSrc, dano = 1, velocidade = 10, velocidadeY = 0, inverterImagem = false) {
         super(posicaoX, posicaoY, largura, altura, imagemSrc);
         this.dano = dano;
         this.velocidade = velocidade;
         this.velocidadeY = velocidadeY;
+        this.inverterImagem = inverterImagem;
     }
 
     desenharTiro() {
         if (this.imagemSrc && this.imagemSrc !== 'red') {
-            contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura);
+            if (this.inverterImagem) {
+                contexto.save();
+                contexto.translate(this.posicaoX + this.largura, this.posicaoY);
+                contexto.scale(-1, 1);
+                contexto.drawImage(pegarImagem(this.imagemSrc), 0, 0, this.largura, this.altura);
+                contexto.restore();
+            } else {
+                contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura);
+            }
         } else {
             contexto.fillStyle = '#ff3333';
             contexto.shadowColor = '#ff3333';
@@ -376,28 +407,28 @@ class TiroBoss extends ObjetoDoJogo {
  */
 const TIPOS_DE_TIRO_DO_BOSS = ['RAPIDO', 'PESADO', 'DUPLO'];
 
-function criarTiroAleatorioDoBoss(boss, imagemSrc, larguraBase, alturaBase) {
+function criarTiroAleatorioDoBoss(boss, imagemSrc, larguraBase, alturaBase, inverterImagem = false) {
     const tipoSorteado = TIPOS_DE_TIRO_DO_BOSS[Math.floor(Math.random() * TIPOS_DE_TIRO_DO_BOSS.length)];
     const centroY = boss.posicaoY + boss.altura / 2;
 
     if (tipoSorteado === 'RAPIDO') {
         const largura = larguraBase * 0.7;
         const altura = alturaBase * 0.7;
-        return [new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 16)];
+        return [new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 16, 0, inverterImagem)];
     }
 
     if (tipoSorteado === 'PESADO') {
         const largura = larguraBase * 1.6;
         const altura = alturaBase * 1.6;
-        return [new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 2, 5)];
+        return [new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 2, 5, 0, inverterImagem)];
     }
 
     // DUPLO — um projétil abre para cima e outro para baixo
     const largura = larguraBase * 0.8;
     const altura = alturaBase * 0.8;
     return [
-        new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 10, -2.5),
-        new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 10, 2.5),
+        new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 10, -2.5, inverterImagem),
+        new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 10, 2.5, inverterImagem),
     ];
 }
 

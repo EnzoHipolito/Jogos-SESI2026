@@ -12,7 +12,7 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 // ─── Objetos Básicos ─────────────────────────
 // Utilizando um background estático que não se repete
 let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/backgroundFase2.png')
-let naveDoJogador = new PersonagemAnimado(250, 100, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead sprites (9-13)
+let naveDoJogador = new PersonagemAnimado(250, 100, 100, 120, '../assets/bombhead_spritess/', 'bombhead_1.png', ['bombhead_2.png', 'bombhead_3.png', 'bombhead_4.png', 'bombhead_5.png'], 'bombhead_6.png') // Bombhead sprites
 naveDoJogador.forcaDoPulo = -16; // Pulo maior para a Fase 2
 naveDoJogador.temChao = false; // Se cair da nuvem, morre
 
@@ -55,6 +55,8 @@ let bossDaFase = {
     largura: 250,
     altura: 250,
     imagemSrc: '../assets/vilao_nuvem/vilao_nuvem1.png',
+    imagemTiro: '../assets/vilao_nuvem/vilao_nuvem2.png',
+    tempoTiro: 0,
     direcaoVertical: 1,
     velocidade: 2.0,
     vidaDoBoss: 0,
@@ -65,9 +67,10 @@ let bossDaFase = {
         this.posicaoX = 620
         this.posicaoY = 200
         this.direcaoVertical = 1
-        this.vidaMaximaDoBoss = 8
+        this.vidaMaximaDoBoss = 20
         this.vidaDoBoss = this.vidaMaximaDoBoss
         this.contadorDeTiro = 0
+        this.tempoTiro = 0
     },
 
     /**
@@ -89,7 +92,9 @@ let bossDaFase = {
      * Desenha o boss na tela junto com sua barra de vida.
      */
     desenharObjeto() {
-        contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura)
+        let img = pegarImagem(this.tempoTiro > 0 ? this.imagemTiro : this.imagemSrc);
+        if (this.tempoTiro > 0) this.tempoTiro--;
+        contexto.drawImage(img, this.posicaoX, this.posicaoY, this.largura, this.altura)
 
         // Barra de vida do boss (acima dele)
         let porcentagemVida = this.vidaDoBoss / this.vidaMaximaDoBoss
@@ -108,10 +113,7 @@ let bossDaFase = {
      * Verifica se o boss colidiu com outro objeto (nave ou tiro).
      */
     colidiuCom(outroObjeto) {
-        return (this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
-               (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
-               (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
-               (this.posicaoY + this.altura > outroObjeto.posicaoY)
+        return verificarColisao(this, outroObjeto)
     },
 
     /**
@@ -121,7 +123,8 @@ let bossDaFase = {
         this.contadorDeTiro += 1
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
-            criarTiroAleatorioDoBoss(this, '../assets/tiro_aviao_aviao/tiroaviao02.png', 80, 80).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
+            this.tempoTiro = 20;
+            criarTiroAleatorioDoBoss(this, '../assets/tiro_raio_nuvem/tiro1.png', 50, 20, true).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
         }
     }
 }
@@ -141,7 +144,10 @@ document.addEventListener('keydown', (eventoTeclado) => {
         }
         // Disparo
         if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
-            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+            if (naveDoJogador.cooldownTiro <= 0) {
+                listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
+                naveDoJogador.cooldownTiro = 15;
+            }
         }
     }
     else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
@@ -165,8 +171,8 @@ document.addEventListener('keyup', (eventoTeclado) => {
 
 function iniciarFase() {
     naveDoJogador.vida = configuracaoDaFase.vidasDaFase
-    naveDoJogador.posicaoX = 50
-    naveDoJogador.posicaoY = 245
+    naveDoJogador.posicaoX = 250
+    naveDoJogador.posicaoY = 100
     // Resetar física do personagem
     naveDoJogador.velocidadeX = 0
     naveDoJogador.velocidadeY = 0
@@ -228,12 +234,21 @@ function conferirTirosDoBossNaNave() {
 function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillStyle = 'rgba(0, 0, 0, 0.7)'
     contexto.fillRect(0, 0, 1024, 640)
-    contexto.fillStyle = 'white'
-    contexto.textAlign = 'center'
-    contexto.font = 'bold 50px Arial'
-    contexto.fillText(mensagemDeResultado, 512, 300)
-    contexto.font = '20px Arial'
-    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+
+    if (mensagemDeResultado === 'VITÓRIA!') {
+        contexto.drawImage(pegarImagem('../assets/vc_ganhou.png'), 212, 100, 600, 400)
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 550)
+    } else {
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 50px Arial'
+        contexto.fillText(mensagemDeResultado, 512, 300)
+        contexto.font = '20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+    }
 }
 
 function desenharGraficosDoNivel() {
@@ -255,6 +270,7 @@ function desenharGraficosDoNivel() {
 }
 
 function atualizarCalculosDoNivel() {
+    if (naveDoJogador.cooldownTiro > 0) naveDoJogador.cooldownTiro--
     naveDoJogador.mover(nuvensDaFase)
 
     // Se o jogador cair do mapa (passar do final da tela)

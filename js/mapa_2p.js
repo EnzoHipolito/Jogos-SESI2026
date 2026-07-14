@@ -45,7 +45,7 @@ function principal() {
     contexto.textAlign = 'center'
     contexto.font = 'bold 16px Arial'
     contexto.fillStyle = '#00eeff'
-    contexto.fillText('MODO 2 JOGADORES', 400, 70)
+    contexto.fillText('MODO 2 JOGADORES', 512, 70)
 
     requestAnimationFrame(principal)
 }
