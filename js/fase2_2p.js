@@ -40,11 +40,6 @@ let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
 let textoFixoDeVidasJ2 = new Texto()
 let textoComValorDeVidasJ2 = new Texto()
-const audioMotorDaNave = new Audio('../assets/nave_som.mp3')
-const audioDeColisao = new Audio('../assets/batida.mp3')
-audioMotorDaNave.volume = 1.0
-audioMotorDaNave.loop = true
-audioDeColisao.volume = 0.7
 
 // ─── Tiros do Jogador 1 ───
 let listaDeTirosDisparados = []
@@ -150,7 +145,7 @@ let bossDaFase = {
         this.contadorDeTiro += 1
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
-            listaDeTirosDoBoss.push(new TiroBoss(this.posicaoX, this.posicaoY + this.altura / 2 - 15, 80, 80, '../assets/tiro_aviao_aviao/tiroaviao02.png'))
+            criarTiroAleatorioDoBoss(this, '../assets/tiro_aviao_aviao/tiroaviao02.png', 80, 80).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
         }
     }
 }
@@ -238,7 +233,6 @@ function iniciarFase() {
     elementoCanvasDoJogo.style.cursor = 'default'
     estadoAtualDaFase = ESTADOS_DA_FASE.JOGANDO
 
-    try { audioMotorDaNave.currentTime = 0; audioMotorDaNave.play().catch(() => { }) } catch (erroDoNavegador) { }
 }
 
 /**
@@ -252,7 +246,6 @@ function conferirBatidaDaNaveComBoss() {
     if (naveDoJogador.vida > 0 && bossDaFase.colidiuCom(naveDoJogador)) {
         naveDoJogador.vida -= 1
         cooldownDeColisao = 60
-        try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
     }
 }
 
@@ -267,7 +260,6 @@ function conferirBatidaDaNaveComBossJ2() {
     if (naveDoJogador2.vida > 0 && bossDaFase.colidiuCom(naveDoJogador2)) {
         naveDoJogador2.vida -= 1
         cooldownDeColisaoJ2 = 60
-        try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
     }
 }
 
@@ -296,14 +288,12 @@ function conferirTirosDoBossNaNave() {
     listaDeTirosDoBoss.forEach((tiro) => {
         if (naveDoJogador.vida > 0 && naveDoJogador.colidiuCom(tiro)) {
             listaDeTirosDoBoss.splice(listaDeTirosDoBoss.indexOf(tiro), 1)
-            naveDoJogador.vida -= 1
-            try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
+            naveDoJogador.vida -= tiro.dano
             return
         }
         if (naveDoJogador2.vida > 0 && naveDoJogador2.colidiuCom(tiro)) {
             listaDeTirosDoBoss.splice(listaDeTirosDoBoss.indexOf(tiro), 1)
-            naveDoJogador2.vida -= 1
-            try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
+            naveDoJogador2.vida -= tiro.dano
         }
     })
 }
@@ -395,13 +385,11 @@ function atualizarCalculosDoNivel() {
     if (naveDoJogador.vida <= 0 && naveDoJogador2.vida <= 0) {
         mensagemDeResultado = 'DERROTA!'
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
-        audioMotorDaNave.pause()
     } else if (bossDaFase.vidaDoBoss == 0) {
         mensagemDeResultado = 'VITÓRIA!'
         fasesJaCompletadas[ID_DA_FASE] = true
         salvarProgresso()
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
-        audioMotorDaNave.pause()
     }
 }
 

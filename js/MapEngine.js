@@ -1,8 +1,8 @@
 // ─── Dados das 3 fases ───────────────────────
 const fasesDoJogo = [
-    { idFase: 0, posicaoX: 256, posicaoY: 385, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: '../assets/vilao_carta/vilao_carta_01.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 5, iconOffsetX: -75, iconOffsetY: -85 },
-    { idFase: 1, posicaoX: 512, posicaoY: 395, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: '../assets/vilao_nuvem/vilao_nuvem1.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 5, iconOffsetX: -30, iconOffsetY: -90 },
-    { idFase: 2, posicaoX: 768, posicaoY: 385, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: '../assets/aviao_vilao/31-removebg-preview.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 4, iconOffsetX: -35, iconOffsetY: -85 },
+    { idFase: 0, posicaoX: 220, posicaoY: 350, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: '../assets/vilao_carta/vilao_carta_01.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 5, iconOffsetX: -75, iconOffsetY: -85 },
+    { idFase: 1, posicaoX: 500, posicaoY: 360, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: '../assets/vilao_nuvem/vilao_nuvem1.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 5, iconOffsetX: -30, iconOffsetY: -90 },
+    { idFase: 2, posicaoX: 800, posicaoY: 375, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: '../assets/aviao_vilao/31-removebg-preview.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 4, iconOffsetX: -35, iconOffsetY: -85 },
 ]
 
 // ─── Progresso global (quais fases foram completadas)
@@ -55,7 +55,7 @@ function desenharMapa() {
         }
 
         // Desenha a imagem (usando pegarImagem do Util.js)
-        contexto.drawImage(pegarImagem(faseASerDesenhada.imagemDoBotao), faseASerDesenhada.posicaoX + (faseASerDesenhada.iconOffsetX || -50), faseASerDesenhada.posicaoY + (faseASerDesenhada.iconOffsetY || -70), 100, 100)
+        contexto.drawImage(pegarImagem(faseASerDesenhada.imagemDoBotao), faseASerDesenhada.posicaoX - 50, faseASerDesenhada.posicaoY - 60, 100, 100)
 
         contexto.globalAlpha = 1 // reseta a transparência
 
