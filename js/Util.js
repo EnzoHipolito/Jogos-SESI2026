@@ -340,6 +340,13 @@ class Tiro extends ObjetoDoJogo {
 
 // ─── Tiro do Boss ──────────────────────────
 class TiroBoss extends ObjetoDoJogo {
+    constructor(posicaoX, posicaoY, largura, altura, imagemSrc, dano = 1, velocidade = 10, velocidadeY = 0) {
+        super(posicaoX, posicaoY, largura, altura, imagemSrc);
+        this.dano = dano;
+        this.velocidade = velocidade;
+        this.velocidadeY = velocidadeY;
+    }
+
     desenharTiro() {
         if (this.imagemSrc && this.imagemSrc !== 'red') {
             contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura);
@@ -353,8 +360,45 @@ class TiroBoss extends ObjetoDoJogo {
     }
 
     mover() {
-        this.posicaoX -= 10;
+        this.posicaoX -= this.velocidade;
+        this.posicaoY += this.velocidadeY;
     }
+}
+
+// ─── Tipos de tiro dos bosses ──────────────
+/**
+ * Os 3 bosses compartilham os mesmos 3 tipos de ataque, mudando só o sprite
+ * e o tamanho base do projétil de cada fase.
+ *
+ * RAPIDO  → projétil pequeno e veloz, dano 1
+ * PESADO  → projétil grande e lento, dano 3
+ * DUPLO   → dois projéteis em leque (um sobe, outro desce), dano 1 cada
+ */
+const TIPOS_DE_TIRO_DO_BOSS = ['RAPIDO', 'PESADO', 'DUPLO'];
+
+function criarTiroAleatorioDoBoss(boss, imagemSrc, larguraBase, alturaBase) {
+    const tipoSorteado = TIPOS_DE_TIRO_DO_BOSS[Math.floor(Math.random() * TIPOS_DE_TIRO_DO_BOSS.length)];
+    const centroY = boss.posicaoY + boss.altura / 2;
+
+    if (tipoSorteado === 'RAPIDO') {
+        const largura = larguraBase * 0.7;
+        const altura = alturaBase * 0.7;
+        return [new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 16)];
+    }
+
+    if (tipoSorteado === 'PESADO') {
+        const largura = larguraBase * 1.6;
+        const altura = alturaBase * 1.6;
+        return [new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 2, 5)];
+    }
+
+    // DUPLO — um projétil abre para cima e outro para baixo
+    const largura = larguraBase * 0.8;
+    const altura = alturaBase * 0.8;
+    return [
+        new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 10, -2.5),
+        new TiroBoss(boss.posicaoX, centroY - altura / 2, largura, altura, imagemSrc, 1, 10, 2.5),
+    ];
 }
 
 // ─── Fundo do Jogo (faixas scrolláveis) ────
