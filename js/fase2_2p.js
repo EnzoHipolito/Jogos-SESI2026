@@ -14,7 +14,7 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/backgroundFase2.png')
 
 // ─── JOGADOR 1 (Bombhead) — WASD + Z/L para atirar ───
-let naveDoJogador = new PersonagemAnimado(20, 0, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead (9-13)
+let naveDoJogador = new PersonagemAnimado(20, 0, 100, 120, '../assets/bombhead_spritess/', 'bombhead_1.png', ['bombhead_2.png', 'bombhead_3.png', 'bombhead_4.png', 'bombhead_5.png'], 'bombhead_6.png') // Bombhead sprites
 
 // ─── JOGADOR 2 (Bombhat) — Setinhas + Enter para atirar ───
 let naveDoJogador2 = new PersonagemAnimado(250, 0, 100, 120, '../assets/Bombhat/') // Bombhat (14-18)
@@ -148,7 +148,7 @@ let bossDaFase = {
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
             this.tempoTiro = 20;
-            criarTiroAleatorioDoBoss(this, '../assets/easterEgg.png', 70, 70, true).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
+            criarTiroAleatorioDoBoss(this, '../assets/tiro_raio_nuvem/tiro1.png', 90, 90, true).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
         }
     }
 }
@@ -171,7 +171,7 @@ document.addEventListener('keydown', (eventoTeclado) => {
         // Disparo J1
         if (eventoTeclado.key === 'z' || eventoTeclado.key === 'l' || eventoTeclado.key === ' ') {
             if (naveDoJogador.cooldownTiro <= 0) {
-                listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+                listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
                 naveDoJogador.cooldownTiro = 15;
             }
         }
@@ -188,7 +188,7 @@ document.addEventListener('keydown', (eventoTeclado) => {
         // Disparo J2
         if (eventoTeclado.key === 'Enter') {
             if (naveDoJogador2.cooldownTiro <= 0) {
-                listaDeTirosDisparados.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+                listaDeTirosDisparados.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
                 naveDoJogador2.cooldownTiro = 15;
             }
         }

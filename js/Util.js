@@ -11,13 +11,13 @@ function pegarImagem(caminhoDaImagem) {
 
 // ─── Utilitário de Colisão ────────────────────
 function verificarColisao(obj1, obj2) {
-    let margem1X = obj1.largura * 0.2;
-    let margem1Y = obj1.altura * 0.2;
-    let margem2X = obj2.largura * 0.2;
-    let margem2Y = obj2.altura * 0.2;
+    let margem1X = obj1.largura * 0.35;
+    let margem1Y = obj1.altura * 0.35;
+    let margem2X = obj2.largura * 0.35;
+    let margem2Y = obj2.altura * 0.35;
 
-    if (obj1.constructor.name === 'Tiro' || obj1.constructor.name === 'TiroBoss') { margem1X = 0; margem1Y = 0; }
-    if (obj2.constructor.name === 'Tiro' || obj2.constructor.name === 'TiroBoss') { margem2X = 0; margem2Y = 0; }
+    if (obj1.constructor.name === 'Tiro' || obj1.constructor.name === 'TiroBoss') { margem1X = obj1.largura * 0.25; margem1Y = obj1.altura * 0.25; }
+    if (obj2.constructor.name === 'Tiro' || obj2.constructor.name === 'TiroBoss') { margem2X = obj2.largura * 0.25; margem2Y = obj2.altura * 0.25; }
 
     let b1X = obj1.posicaoX + margem1X;
     let b1Y = obj1.posicaoY + margem1Y;
@@ -203,7 +203,7 @@ class Plataforma extends ObjetoDoJogo {
  * Inverte horizontalmente quando corre para a esquerda.
  */
 class PersonagemAnimado extends Personagem {
-    constructor(posicaoX, posicaoY, largura, altura, pastaSprites, idleFile = '14.png', runFiles = ['15.png', '16.png', '17.png', '18.png']) {
+    constructor(posicaoX, posicaoY, largura, altura, pastaSprites, idleFile = '14.png', runFiles = ['15.png', '16.png', '17.png', '18.png'], shootFile = null) {
         // Passa null como imagemSrc pois vamos controlar o desenho manualmente
         super(posicaoX, posicaoY, largura, altura, null);
         this.pastaSprites = pastaSprites; // ex: '../assets/Bombhat/'
@@ -211,6 +211,7 @@ class PersonagemAnimado extends Personagem {
         // Sprites disponíveis
         this.spriteIdle      = this.pastaSprites + idleFile;
         this.spritesCorrend  = runFiles.map(file => this.pastaSprites + file);
+        this.spriteAtirando  = shootFile ? this.pastaSprites + shootFile : null;
 
         // Estado de animação
         this.frameAtual       = 0;          // índice do frame de corrida atual
@@ -249,7 +250,10 @@ class PersonagemAnimado extends Personagem {
     desenharObjeto() {
         let srcSprite;
 
-        if (!this.noChao) {
+        if (this.spriteAtirando && this.cooldownTiro > 5) {
+            // Atirando
+            srcSprite = this.spriteAtirando;
+        } else if (!this.noChao) {
             // No ar (pulando ou caindo) → frame do meio da corrida (frame 1)
             srcSprite = this.spritesCorrend[1];
         } else if (this.velocidadeX !== 0) {

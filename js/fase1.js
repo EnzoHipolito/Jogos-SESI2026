@@ -12,7 +12,7 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 // ─── Objetos Básicos ─────────────────────────
 // Utilizando um background estático que não se repete
 let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/bacgroundFase1.png')
-let naveDoJogador = new PersonagemAnimado(50, 270, 100, 120, '../assets/Bombhead/', '9.png', ['10.png', '11.png', '12.png', '13.png']) // Bombhead sprites (9-13)
+let naveDoJogador = new PersonagemAnimado(50, 270, 100, 120, '../assets/bombhead_spritess/', 'bombhead_1.png', ['bombhead_2.png', 'bombhead_3.png', 'bombhead_4.png', 'bombhead_5.png'], 'bombhead_6.png') // Bombhead sprites
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
@@ -129,7 +129,7 @@ document.addEventListener('keydown', (eventoTeclado) => {
         // Disparo
         if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
             if (naveDoJogador.cooldownTiro <= 0) {
-                listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+                listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
                 naveDoJogador.cooldownTiro = 15;
             }
         }

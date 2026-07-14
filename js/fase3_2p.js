@@ -163,7 +163,7 @@ document.addEventListener('keypress', (eventoTeclado) => {
     // Tiro Jogador 1 (L ou Z)
     if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
         if (naveDoJogador.cooldownTiro <= 0) {
-            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
             naveDoJogador.cooldownTiro = 15;
         }
     }
@@ -171,7 +171,7 @@ document.addEventListener('keypress', (eventoTeclado) => {
     // Tiro Jogador 2 (Enter ou E)
     if (eventoTeclado.key === 'Enter' || eventoTeclado.key === 'e') {
         if (naveDoJogador2.cooldownTiro <= 0) {
-            listaDeTirosDisparadosJ2.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+            listaDeTirosDisparadosJ2.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
             naveDoJogador2.cooldownTiro = 15;
         }
     }
