@@ -10,10 +10,10 @@ let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/backgroundFase3.png')
 
 // ─── JOGADOR 1 (Bombhead) — WASD + Z/L para atirar ───
-let naveDoJogador = new Nave(50, 200, 130, 80, '../assets/aviao_bombhead/bombhead_aviao.png') // Avião com personagens
+let naveDoJogador = new Nave(50, 200, 180, 110, '../assets/aviao_bombhead/bombhead_aviao.png') // Avião P1
 
 // ─── JOGADOR 2 (Bombhat) — Setinhas + Enter para atirar ───
-let naveDoJogador2 = new Nave(50, 320, 130, 80, '../assets/aviao_bombhead/bombhat_aviao.png') // Avião com personagens
+let naveDoJogador2 = new Nave(50, 350, 180, 110, '../assets/aviao_bombhead/bombhat_aviao.png') // Avião P2
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
@@ -57,6 +57,8 @@ let bossDaFase = {
     largura: 250,
     altura: 250,
     imagemSrc: '../assets/aviao_vilao/31-removebg-preview.png',
+    imagemTiro: '../assets/aviao_vilao/32-removebg-preview.png',
+    tempoTiro: 0,
     direcaoVertical: 1,
     velocidade: 2.5,
     vidaDoBoss: 0,
@@ -67,9 +69,10 @@ let bossDaFase = {
         this.posicaoX = 620
         this.posicaoY = 200
         this.direcaoVertical = 1
-        this.vidaMaximaDoBoss = 10
+        this.vidaMaximaDoBoss = 25
         this.vidaDoBoss = this.vidaMaximaDoBoss
         this.contadorDeTiro = 0
+        this.tempoTiro = 0
     },
 
     /**
@@ -88,7 +91,9 @@ let bossDaFase = {
     },
 
     desenharObjeto() {
-        contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura)
+        let img = pegarImagem(this.tempoTiro > 0 ? this.imagemTiro : this.imagemSrc);
+        if (this.tempoTiro > 0) this.tempoTiro--;
+        contexto.drawImage(img, this.posicaoX, this.posicaoY, this.largura, this.altura)
 
         // Barra de vida do boss (acima dele)
         let porcentagemVida = this.vidaDoBoss / this.vidaMaximaDoBoss
@@ -104,17 +109,15 @@ let bossDaFase = {
     },
 
     colidiuCom(outroObjeto) {
-        return (this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
-               (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
-               (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
-               (this.posicaoY + this.altura > outroObjeto.posicaoY)
+        return verificarColisao(this, outroObjeto)
     },
 
     atirar() {
         this.contadorDeTiro += 1
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
-            criarTiroAleatorioDoBoss(this, '../assets/tiro_aviao_aviao/tiroaviao03.png', 100, 50).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
+            this.tempoTiro = 20;
+            criarTiroAleatorioDoBoss(this, '../assets/tiro_aviao_aviao/tiroaviao03.png', 100, 50, true).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
         }
     }
 }
@@ -156,13 +159,21 @@ document.addEventListener('keyup', (eventoTeclado) => {
 
 document.addEventListener('keypress', (eventoTeclado) => {
     if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
-    // Disparo Jogador 1
-    if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z' || eventoTeclado.key === ' ') {
-        listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+    
+    // Tiro Jogador 1 (L ou Z)
+    if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
+        if (naveDoJogador.cooldownTiro <= 0) {
+            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+            naveDoJogador.cooldownTiro = 15;
+        }
     }
-    // Disparo Jogador 2
-    if (eventoTeclado.key === 'Enter') {
-        listaDeTirosDisparadosJ2.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+
+    // Tiro Jogador 2 (Enter ou E)
+    if (eventoTeclado.key === 'Enter' || eventoTeclado.key === 'e') {
+        if (naveDoJogador2.cooldownTiro <= 0) {
+            listaDeTirosDisparadosJ2.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+            naveDoJogador2.cooldownTiro = 15;
+        }
     }
 })
 
@@ -260,12 +271,21 @@ function conferirTirosDoBossNaNave() {
 function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillStyle = 'rgba(0, 0, 0, 0.7)'
     contexto.fillRect(0, 0, 1024, 640)
-    contexto.fillStyle = 'white'
-    contexto.textAlign = 'center'
-    contexto.font = 'bold 50px Arial'
-    contexto.fillText(mensagemDeResultado, 512, 300)
-    contexto.font = '20px Arial'
-    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+
+    if (mensagemDeResultado === 'VITÓRIA!') {
+        contexto.drawImage(pegarImagem('../assets/vc_ganhou.png'), 212, 100, 600, 400)
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 550)
+    } else {
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 50px Arial'
+        contexto.fillText(mensagemDeResultado, 512, 300)
+        contexto.font = '20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+    }
 }
 
 function desenharGraficosDoNivel() {
@@ -300,6 +320,8 @@ function desenharGraficosDoNivel() {
 }
 
 function atualizarCalculosDoNivel() {
+    if (naveDoJogador.cooldownTiro > 0) naveDoJogador.cooldownTiro--
+    if (naveDoJogador2.cooldownTiro > 0) naveDoJogador2.cooldownTiro--
     if (naveDoJogador.vida > 0) naveDoJogador.mover()
     if (naveDoJogador2.vida > 0) naveDoJogador2.mover()
 

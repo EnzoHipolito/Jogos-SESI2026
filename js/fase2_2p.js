@@ -79,6 +79,8 @@ let bossDaFase = {
     largura: 250,
     altura: 250,
     imagemSrc: '../assets/vilao_nuvem/vilao_nuvem1.png',
+    imagemTiro: '../assets/vilao_nuvem/vilao_nuvem2.png',
+    tempoTiro: 0,
     direcaoVertical: 1,
     velocidade: 2.0,
     vidaDoBoss: 0,
@@ -89,9 +91,10 @@ let bossDaFase = {
         this.posicaoX = 620
         this.posicaoY = 200
         this.direcaoVertical = 1
-        this.vidaMaximaDoBoss = 8
+        this.vidaMaximaDoBoss = 20
         this.vidaDoBoss = this.vidaMaximaDoBoss
         this.contadorDeTiro = 0
+        this.tempoTiro = 0
     },
 
     /**
@@ -113,7 +116,9 @@ let bossDaFase = {
      * Desenha o boss na tela junto com sua barra de vida.
      */
     desenharObjeto() {
-        contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura)
+        let img = pegarImagem(this.tempoTiro > 0 ? this.imagemTiro : this.imagemSrc);
+        if (this.tempoTiro > 0) this.tempoTiro--;
+        contexto.drawImage(img, this.posicaoX, this.posicaoY, this.largura, this.altura)
 
         // Barra de vida do boss (acima dele)
         let porcentagemVida = this.vidaDoBoss / this.vidaMaximaDoBoss
@@ -132,10 +137,7 @@ let bossDaFase = {
      * Verifica se o boss colidiu com outro objeto (nave ou tiro).
      */
     colidiuCom(outroObjeto) {
-        return (this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
-            (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
-            (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
-            (this.posicaoY + this.altura > outroObjeto.posicaoY)
+        return verificarColisao(this, outroObjeto)
     },
 
     /**
@@ -145,7 +147,8 @@ let bossDaFase = {
         this.contadorDeTiro += 1
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
-            criarTiroAleatorioDoBoss(this, '../assets/tiro_aviao_aviao/tiroaviao02.png', 80, 80).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
+            this.tempoTiro = 20;
+            criarTiroAleatorioDoBoss(this, '../assets/easterEgg.png', 70, 70, true).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
         }
     }
 }
@@ -167,7 +170,10 @@ document.addEventListener('keydown', (eventoTeclado) => {
         }
         // Disparo J1
         if (eventoTeclado.key === 'z' || eventoTeclado.key === 'l' || eventoTeclado.key === ' ') {
-            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+            if (naveDoJogador.cooldownTiro <= 0) {
+                listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+                naveDoJogador.cooldownTiro = 15;
+            }
         }
 
         // ─── Controles Jogador 2 (Setinhas + Enter) ───
@@ -181,7 +187,10 @@ document.addEventListener('keydown', (eventoTeclado) => {
         }
         // Disparo J2
         if (eventoTeclado.key === 'Enter') {
-            listaDeTirosDisparadosJ2.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+            if (naveDoJogador2.cooldownTiro <= 0) {
+                listaDeTirosDisparados.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 100, 50, '../assets/tiro_aviao_aviao/tiroaviao01.png'))
+                naveDoJogador2.cooldownTiro = 15;
+            }
         }
     }
     else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
@@ -209,16 +218,16 @@ document.addEventListener('keyup', (eventoTeclado) => {
 function iniciarFase() {
     // Jogador 1
     naveDoJogador.vida = configuracaoDaFase.vidasDaFase
-    naveDoJogador.posicaoX = 50
-    naveDoJogador.posicaoY = 245
+    naveDoJogador.posicaoX = 20
+    naveDoJogador.posicaoY = 0
     naveDoJogador.velocidadeX = 0
     naveDoJogador.velocidadeY = 0
     naveDoJogador.noChao = false
 
     // Jogador 2
     naveDoJogador2.vida = configuracaoDaFase.vidasDaFase
-    naveDoJogador2.posicaoX = 50
-    naveDoJogador2.posicaoY = 345
+    naveDoJogador2.posicaoX = 250
+    naveDoJogador2.posicaoY = 0
     naveDoJogador2.velocidadeX = 0
     naveDoJogador2.velocidadeY = 0
     naveDoJogador2.noChao = false
@@ -304,12 +313,21 @@ function conferirTirosDoBossNaNave() {
 function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillStyle = 'rgba(0, 0, 0, 0.7)'
     contexto.fillRect(0, 0, 1024, 640)
-    contexto.fillStyle = 'white'
-    contexto.textAlign = 'center'
-    contexto.font = 'bold 50px Arial'
-    contexto.fillText(mensagemDeResultado, 512, 300)
-    contexto.font = '20px Arial'
-    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+
+    if (mensagemDeResultado === 'VITÓRIA!') {
+        contexto.drawImage(pegarImagem('../assets/vc_ganhou.png'), 212, 100, 600, 400)
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 550)
+    } else {
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 50px Arial'
+        contexto.fillText(mensagemDeResultado, 512, 300)
+        contexto.font = '20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+    }
 }
 
 function desenharGraficosDoNivel() {
@@ -345,6 +363,8 @@ function desenharGraficosDoNivel() {
 }
 
 function atualizarCalculosDoNivel() {
+    if (naveDoJogador.cooldownTiro > 0) naveDoJogador.cooldownTiro--
+    if (naveDoJogador2.cooldownTiro > 0) naveDoJogador2.cooldownTiro--
     if (naveDoJogador.vida > 0) naveDoJogador.mover(nuvensDaFase)
     if (naveDoJogador2.vida > 0) naveDoJogador2.mover(nuvensDaFase)
 
