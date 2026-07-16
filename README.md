@@ -22,11 +22,11 @@
 - **Nas Fases 1 e 2 (Estilo Plataforma):**
   - Movimentação horizontal: `A`, `D` ou `Setas (Esquerda/Direita)`.
   - Pular: `W`, `Seta para Cima` ou `Barra de Espaço`.
-  - Disparar: `L` ou `Z`.
+  - Disparar: `G`.
 - **Na Fase 3 (Estilo Voo):**
   - Movimentação vertical: `W`, `S` ou `Setas (Cima/Baixo)`.
-  - Disparar: `L` ou `Z`.
-- **Voltar/Sair:** Em qualquer fase ou no mapa, utilize a tecla `ESC` para voltar ao menu anterior.
+  - Disparar: `G`.
+- **Voltar/Sair:** Em qualquer fase ou no mapa, utilize a tecla `ESC` para ou clique no botão no topo da tela para voltar ao menu anterior.
 - **Modos de Jogo:** O game possui as opções de campanha single-player (1 JOGADOR) e o modo colaborativo (2 JOGADORES).
 
 ## 4. Especificações Técnicas
@@ -51,5 +51,5 @@ Como um terceiro pode rodar este projeto:
    [Link do Vercel - Inserir o link aqui](#) *(Substitua este espaço em branco pelo URL real do projeto quando hospedado no Vercel).*
 
 ## 6. Créditos
-- **Desenvolvedor:** Bernardo Rodrigues
+- **Desenvolvedores:** Bernardo Rodrigues, Enzo dos Santos Hipolito, Matheus Orsi Reis e Santiago Fidmay. 
 - **Product Owner:** Professor Orientador
