@@ -51,5 +51,5 @@ Como um terceiro pode rodar este projeto:
    [Link do Vercel - Inserir o link aqui](#) *(Substitua este espaço em branco pelo URL real do projeto quando hospedado no Vercel).*
 
 ## 6. Créditos
-- **Desenvolvedor:** Bernardo Rodrigues, Santiago Fidmay, Enzo dos Santos Hipolito, Matheus O. Reis
-- **Product Owner:** Carlos Roberto Da Silva Filho
+- **Desenvolvedor:** Bernardo Rodrigues
+- **Product Owner:** Professor Orientador

@@ -115,6 +115,8 @@ document.addEventListener('keydown', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = -5
         if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 5
+        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') naveDoJogador.direcaoDeMovimentoX = -5
+        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') naveDoJogador.direcaoDeMovimentoX = 5
     }
     else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
         if (eventoTeclado.key === 'Enter') {
@@ -127,6 +129,8 @@ document.addEventListener('keyup', (eventoTeclado) => {
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = 0
         if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 0
+        if (eventoTeclado.key === 'a' || eventoTeclado.key === 'ArrowLeft') naveDoJogador.direcaoDeMovimentoX = 0
+        if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') naveDoJogador.direcaoDeMovimentoX = 0
     }
 
     if (eventoTeclado.key === 'Escape') {
@@ -139,7 +143,7 @@ document.addEventListener('keyup', (eventoTeclado) => {
 
 document.addEventListener('keypress', (eventoTeclado) => {
     if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
-    if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
+    if (eventoTeclado.key === 'g' || eventoTeclado.key === 'G') {
         if (naveDoJogador.cooldownTiro <= 0) {
             listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura / 2 + 10, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
             naveDoJogador.cooldownTiro = 15;
@@ -155,6 +159,7 @@ function iniciarFase() {
     naveDoJogador.posicaoX = 50
     naveDoJogador.posicaoY = 245
     naveDoJogador.direcaoDeMovimento = 0
+    naveDoJogador.direcaoDeMovimentoX = 0
     listaDeTirosDisparados = []
     listaDeTirosDoBoss = []
     bossDaFase.iniciar()

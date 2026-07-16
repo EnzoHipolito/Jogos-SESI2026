@@ -136,9 +136,11 @@ document.addEventListener('keydown', (eventoTeclado) => {
         // ─── Controles Jogador 1 (WASD) ───
         if (eventoTeclado.key === 'w') naveDoJogador.direcaoDeMovimento = -5
         if (eventoTeclado.key === 's') naveDoJogador.direcaoDeMovimento = 5
+        if (eventoTeclado.key === 'a') naveDoJogador.direcaoDeMovimentoX = -5
+        if (eventoTeclado.key === 'd') naveDoJogador.direcaoDeMovimentoX = 5
         
         // Disparo Jogador 1
-        if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z' || eventoTeclado.key === ' ') {
+        if (eventoTeclado.key === 'g' || eventoTeclado.key === 'G') {
             if (naveDoJogador.cooldownTiro <= 0) {
                 listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura / 2 + 10, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
                 naveDoJogador.cooldownTiro = 15;
@@ -149,6 +151,8 @@ document.addEventListener('keydown', (eventoTeclado) => {
         // ─── Controles Jogador 2 (Setinhas) ───
         if (eventoTeclado.key === 'ArrowUp') naveDoJogador2.direcaoDeMovimento = -5
         if (eventoTeclado.key === 'ArrowDown') naveDoJogador2.direcaoDeMovimento = 5
+        if (eventoTeclado.key === 'ArrowLeft') naveDoJogador2.direcaoDeMovimentoX = -5
+        if (eventoTeclado.key === 'ArrowRight') naveDoJogador2.direcaoDeMovimentoX = 5
         
         // Disparo Jogador 2
         if (eventoTeclado.key === 'Enter') {
@@ -171,9 +175,13 @@ document.addEventListener('keyup', (eventoTeclado) => {
         // Jogador 1
         if (eventoTeclado.key === 'w') naveDoJogador.direcaoDeMovimento = 0
         if (eventoTeclado.key === 's') naveDoJogador.direcaoDeMovimento = 0
+        if (eventoTeclado.key === 'a') naveDoJogador.direcaoDeMovimentoX = 0
+        if (eventoTeclado.key === 'd') naveDoJogador.direcaoDeMovimentoX = 0
         // Jogador 2
         if (eventoTeclado.key === 'ArrowUp') naveDoJogador2.direcaoDeMovimento = 0
         if (eventoTeclado.key === 'ArrowDown') naveDoJogador2.direcaoDeMovimento = 0
+        if (eventoTeclado.key === 'ArrowLeft') naveDoJogador2.direcaoDeMovimentoX = 0
+        if (eventoTeclado.key === 'ArrowRight') naveDoJogador2.direcaoDeMovimentoX = 0
     }
 
     if (eventoTeclado.key === 'Escape') {
@@ -192,6 +200,7 @@ function iniciarFase() {
     naveDoJogador.posicaoX = 50
     naveDoJogador.posicaoY = 245
     naveDoJogador.direcaoDeMovimento = 0
+    naveDoJogador.direcaoDeMovimentoX = 0
 
     // Jogador 2
     naveDoJogador2.vida = configuracaoDaFase.vidasDaFase
@@ -199,6 +208,7 @@ function iniciarFase() {
     naveDoJogador2.posicaoX = 50
     naveDoJogador2.posicaoY = 345
     naveDoJogador2.direcaoDeMovimento = 0
+    naveDoJogador2.direcaoDeMovimentoX = 0
 
     listaDeTirosDisparados = []
     listaDeTirosDisparadosJ2 = []

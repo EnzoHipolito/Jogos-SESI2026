@@ -136,7 +136,7 @@ document.addEventListener('keydown', (eventoTeclado) => {
             if (estaNoChaoAntes) SoundManager.tocarSomPulo()
         }
         // Disparo
-        if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
+        if (eventoTeclado.key === 'g' || eventoTeclado.key === 'G') {
             if (naveDoJogador.cooldownTiro <= 0) {
                 listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura / 2 + 10, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
                 naveDoJogador.cooldownTiro = 15;
