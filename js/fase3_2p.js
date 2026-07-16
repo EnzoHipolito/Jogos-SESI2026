@@ -7,6 +7,8 @@ let mensagemDeResultado = ''
 
 let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 
+let vidaMaximaDoJogador = 0;
+
 let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/backgroundFase3.png')
 
 // ─── JOGADOR 1 (Bombhead) — WASD + Z/L para atirar ───
@@ -19,6 +21,8 @@ let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
 let textoFixoDeVidasJ2 = new Texto()
 let textoComValorDeVidasJ2 = new Texto()
+let textoFixoDePontos = new Texto()
+let textoComValorDePontos = new Texto()
 
 // ─── Tiros do Jogador 1 ───
 let listaDeTirosDisparados = []
@@ -66,10 +70,10 @@ let bossDaFase = {
     contadorDeTiro: 0,
 
     iniciar() {
-        this.posicaoX = 620
+        this.posicaoX = 720
         this.posicaoY = 200
         this.direcaoVertical = 1
-        this.vidaMaximaDoBoss = 25
+        this.vidaMaximaDoBoss = 35
         this.vidaDoBoss = this.vidaMaximaDoBoss
         this.contadorDeTiro = 0
         this.tempoTiro = 0
@@ -117,6 +121,7 @@ let bossDaFase = {
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
             this.tempoTiro = 20;
+            SoundManager.tocarSomTiroBoss()
             criarTiroAleatorioDoBoss(this, '../assets/tiro_aviao_aviao/tiroaviao03.png', 100, 50, true).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
         }
     }
@@ -126,23 +131,38 @@ let cooldownDeColisao = 0
 let cooldownDeColisaoJ2 = 0
 
 document.addEventListener('keydown', (eventoTeclado) => {
+    SoundManager.inicializar()
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         // ─── Controles Jogador 1 (WASD) ───
         if (eventoTeclado.key === 'w') naveDoJogador.direcaoDeMovimento = -5
         if (eventoTeclado.key === 's') naveDoJogador.direcaoDeMovimento = 5
+        
+        // Disparo Jogador 1
+        if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z' || eventoTeclado.key === ' ') {
+            if (naveDoJogador.cooldownTiro <= 0) {
+                listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura / 2 + 10, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
+                naveDoJogador.cooldownTiro = 15;
+                SoundManager.tocarSomTiro()
+            }
+        }
 
         // ─── Controles Jogador 2 (Setinhas) ───
         if (eventoTeclado.key === 'ArrowUp') naveDoJogador2.direcaoDeMovimento = -5
         if (eventoTeclado.key === 'ArrowDown') naveDoJogador2.direcaoDeMovimento = 5
+        
+        // Disparo Jogador 2
+        if (eventoTeclado.key === 'Enter') {
+            if (naveDoJogador2.cooldownTiro <= 0) {
+                listaDeTirosDisparadosJ2.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura / 2 + 10, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
+                naveDoJogador2.cooldownTiro = 15;
+                SoundManager.tocarSomTiro()
+            }
+        }
     }
     else if (estadoAtualDaFase === ESTADOS_DA_FASE.RESULTADO) {
         if (eventoTeclado.key === 'Enter') {
             window.location.href = "mapa_2p.html"
         }
-    }
-
-    if (eventoTeclado.key === 'Escape') {
-        window.location.href = "mapa_2p.html"
     }
 })
 
@@ -155,24 +175,11 @@ document.addEventListener('keyup', (eventoTeclado) => {
         if (eventoTeclado.key === 'ArrowUp') naveDoJogador2.direcaoDeMovimento = 0
         if (eventoTeclado.key === 'ArrowDown') naveDoJogador2.direcaoDeMovimento = 0
     }
-})
 
-document.addEventListener('keypress', (eventoTeclado) => {
-    if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
-    
-    // Tiro Jogador 1 (L ou Z)
-    if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
-        if (naveDoJogador.cooldownTiro <= 0) {
-            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
-            naveDoJogador.cooldownTiro = 15;
-        }
-    }
-
-    // Tiro Jogador 2 (Enter ou E)
-    if (eventoTeclado.key === 'Enter' || eventoTeclado.key === 'e') {
-        if (naveDoJogador2.cooldownTiro <= 0) {
-            listaDeTirosDisparadosJ2.push(new Tiro(naveDoJogador2.posicaoX + naveDoJogador2.largura, naveDoJogador2.posicaoY + naveDoJogador2.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
-            naveDoJogador2.cooldownTiro = 15;
+    if (eventoTeclado.key === 'Escape') {
+        if (!window.saindo) {
+            window.saindo = true;
+            window.location.href = "mapa.html"
         }
     }
 })
@@ -180,12 +187,15 @@ document.addEventListener('keypress', (eventoTeclado) => {
 function iniciarFase() {
     // Jogador 1
     naveDoJogador.vida = configuracaoDaFase.vidasDaFase
+    vidaMaximaDoJogador = configuracaoDaFase.vidasDaFase
+    naveDoJogador.pontos = 0
     naveDoJogador.posicaoX = 50
     naveDoJogador.posicaoY = 245
     naveDoJogador.direcaoDeMovimento = 0
 
     // Jogador 2
     naveDoJogador2.vida = configuracaoDaFase.vidasDaFase
+    naveDoJogador2.pontos = 0
     naveDoJogador2.posicaoX = 50
     naveDoJogador2.posicaoY = 345
     naveDoJogador2.direcaoDeMovimento = 0
@@ -196,6 +206,8 @@ function iniciarFase() {
     bossDaFase.iniciar()
     cooldownDeColisao = 0
     cooldownDeColisaoJ2 = 0
+    inicializarColetaveis()
+    SoundManager.resetarResultado()
 
     elementoCanvasDoJogo.style.cursor = 'default'
     estadoAtualDaFase = ESTADOS_DA_FASE.JOGANDO
@@ -213,6 +225,7 @@ function conferirBatidaDaNaveComBoss() {
     if (naveDoJogador.vida > 0 && bossDaFase.colidiuCom(naveDoJogador)) {
         naveDoJogador.vida -= 1
         cooldownDeColisao = 60
+        SoundManager.tocarSomDano()
     }
 }
 
@@ -227,6 +240,7 @@ function conferirBatidaDaNaveComBossJ2() {
     if (naveDoJogador2.vida > 0 && bossDaFase.colidiuCom(naveDoJogador2)) {
         naveDoJogador2.vida -= 1
         cooldownDeColisaoJ2 = 60
+        SoundManager.tocarSomDano()
     }
 }
 
@@ -238,12 +252,14 @@ function conferirTirosNoBoss() {
         if (bossDaFase.colidiuCom(tiroDisparadoAgora)) {
             listaDeTirosDisparados.splice(listaDeTirosDisparados.indexOf(tiroDisparadoAgora), 1)
             bossDaFase.vidaDoBoss -= 1
+            SoundManager.tocarSomImpacto()
         }
     })
     listaDeTirosDisparadosJ2.forEach((tiroDisparadoAgora) => {
         if (bossDaFase.colidiuCom(tiroDisparadoAgora)) {
             listaDeTirosDisparadosJ2.splice(listaDeTirosDisparadosJ2.indexOf(tiroDisparadoAgora), 1)
             bossDaFase.vidaDoBoss -= 1
+            SoundManager.tocarSomImpacto()
         }
     })
 }
@@ -256,11 +272,13 @@ function conferirTirosDoBossNaNave() {
         if (naveDoJogador.vida > 0 && naveDoJogador.colidiuCom(tiro)) {
             listaDeTirosDoBoss.splice(listaDeTirosDoBoss.indexOf(tiro), 1)
             naveDoJogador.vida -= tiro.dano
+            SoundManager.tocarSomDano()
             return
         }
         if (naveDoJogador2.vida > 0 && naveDoJogador2.colidiuCom(tiro)) {
             listaDeTirosDoBoss.splice(listaDeTirosDoBoss.indexOf(tiro), 1)
             naveDoJogador2.vida -= tiro.dano
+            SoundManager.tocarSomDano()
         }
     })
 }
@@ -278,6 +296,9 @@ function desenharTelaDeVitoriaOuDerrota() {
         contexto.textAlign = 'center'
         contexto.font = 'bold 20px Arial'
         contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 550)
+        contexto.font = 'bold 22px Arial'
+        contexto.fillStyle = '#FFD700'
+        contexto.fillText('Pontuação J1: ' + naveDoJogador.pontos + ' pts  |  J2: ' + naveDoJogador2.pontos + ' pts', 512, 510)
     } else {
         contexto.fillStyle = 'white'
         contexto.textAlign = 'center'
@@ -285,6 +306,9 @@ function desenharTelaDeVitoriaOuDerrota() {
         contexto.fillText(mensagemDeResultado, 512, 300)
         contexto.font = '20px Arial'
         contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+        contexto.font = 'bold 20px Arial'
+        contexto.fillStyle = '#FFD700'
+        contexto.fillText('Pontuação J1: ' + naveDoJogador.pontos + ' pts  |  J2: ' + naveDoJogador2.pontos + ' pts', 512, 400)
     }
 }
 
@@ -297,6 +321,7 @@ function desenharGraficosDoNivel() {
     gerenciadorDeTiros.desenharNaTela()
     listaDeTirosDoBoss.forEach((tiro) => tiro.desenharTiro())
     bossDaFase.desenharObjeto()
+    desenharColetaveis(contexto)
 
     // HUD Jogador 1
     textoFixoDeVidas.desenharTexto('J1 Vidas:', 10, 40, '#00eeff', '20px Georgia')
@@ -305,6 +330,10 @@ function desenharGraficosDoNivel() {
     // HUD Jogador 2
     textoFixoDeVidasJ2.desenharTexto('J2 Vidas:', 10, 70, '#ffaa00', '20px Georgia')
     textoComValorDeVidasJ2.desenharTexto(naveDoJogador2.vida, 120, 70, 'red', '20px Georgia')
+
+    // Pontos
+    textoFixoDePontos.desenharTexto('Pontos:', 10, 100, 'white', '18px Georgia')
+    textoComValorDePontos.desenharTexto('J1:' + naveDoJogador.pontos + ' J2:' + naveDoJogador2.pontos, 95, 100, '#FFD700', '18px Georgia')
 
     // Instrução ESC
     contexto.textAlign = 'center'
@@ -336,6 +365,23 @@ function atualizarCalculosDoNivel() {
         }
     })
 
+    // Coletáveis para J1
+    atualizarColetaveis(naveDoJogador, vidaMaximaDoJogador)
+    // Coletáveis para J2 (verificação manual)
+    for (let i = listaDeColetaveis.length - 1; i >= 0; i--) {
+        const col = listaDeColetaveis[i]
+        if (col.colidiuComNave(naveDoJogador2)) {
+            if (col.tipo === 'pontos') {
+                naveDoJogador2.pontos = (naveDoJogador2.pontos || 0) + 50
+                SoundManager.tocarSomColetavel()
+            } else {
+                if (naveDoJogador2.vida < vidaMaximaDoJogador) naveDoJogador2.vida++
+                SoundManager.tocarSomVida()
+            }
+            listaDeColetaveis.splice(i, 1)
+        }
+    }
+
     conferirTirosNoBoss()
     conferirBatidaDaNaveComBoss()
     conferirBatidaDaNaveComBossJ2()
@@ -344,11 +390,13 @@ function atualizarCalculosDoNivel() {
     if (naveDoJogador.vida <= 0 && naveDoJogador2.vida <= 0) {
         mensagemDeResultado = 'DERROTA!'
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
-    } else if (bossDaFase.vidaDoBoss == 0) {
+        SoundManager.tocarSomDerrota()
+    } else if (bossDaFase.vidaDoBoss <= 0) {
         mensagemDeResultado = 'VITÓRIA!'
         fasesJaCompletadas[ID_DA_FASE] = true
         salvarProgresso()
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
+        SoundManager.tocarSomVitoria()
     }
 }
 
