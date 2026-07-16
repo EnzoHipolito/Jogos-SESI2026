@@ -7,16 +7,16 @@ let mensagemDeResultado = ''
 
 let configuracaoDaFase = fasesDoJogo[ID_DA_FASE];
 
-let fundoDoCenario = new Fundo(0, 0, 800, 560, '../assets/backgroundFase3.png')
-let naveDoJogador = new Nave(50, 270, 130, 80, '../assets/personagens_inicio.png') 
+// ─── Vida máxima do jogador (para limitar cura dos coletáveis) ────────────────
+let vidaMaximaDoJogador = 0;
+
+let fundoDoCenario = new Fundo(0, 0, 1024, 640, '../assets/backgroundFase3.png')
+let naveDoJogador = new Nave(50, 270, 180, 110, '../assets/aviao_bombhead/bombhead_aviao.png') // Avião com todos os personagens
 
 let textoFixoDeVidas = new Texto()
 let textoComValorDeVidas = new Texto()
-const audioMotorDaNave = new Audio('../assets/nave_som.mp3')
-const audioDeColisao = new Audio('../assets/batida.mp3')
-audioMotorDaNave.volume = 1.0
-audioMotorDaNave.loop = true
-audioDeColisao.volume = 0.7
+let textoFixoDePontos = new Texto()
+let textoComValorDePontos = new Texto()
 
 let listaDeTirosDisparados = []
 let listaDeTirosDoBoss = []
@@ -39,9 +39,11 @@ let gerenciadorDeTiros = {
 let bossDaFase = {
     posicaoX: 620,
     posicaoY: 200,
-    largura: 150,
-    altura: 150,
-    imagemSrc: '../assets/disco3.png',
+    largura: 250,
+    altura: 250,
+    imagemSrc: '../assets/aviao_vilao/31-removebg-preview.png',
+    imagemTiro: '../assets/aviao_vilao/32-removebg-preview.png',
+    tempoTiro: 0,
     direcaoVertical: 1,
     velocidade: 2.5,
     vidaDoBoss: 0,
@@ -49,12 +51,13 @@ let bossDaFase = {
     contadorDeTiro: 0,
 
     iniciar() {
-        this.posicaoX = 620
+        this.posicaoX = 720
         this.posicaoY = 200
         this.direcaoVertical = 1
-        this.vidaMaximaDoBoss = 10
+        this.vidaMaximaDoBoss = 32
         this.vidaDoBoss = this.vidaMaximaDoBoss
         this.contadorDeTiro = 0
+        this.tempoTiro = 0
     },
 
     /**
@@ -66,14 +69,16 @@ let bossDaFase = {
             this.posicaoY = 10
             this.direcaoVertical = 1
         }
-        if (this.posicaoY >= 560 - this.altura - 10) {
-            this.posicaoY = 560 - this.altura - 10
+        if (this.posicaoY >= 640 - this.altura - 10) {
+            this.posicaoY = 640 - this.altura - 10
             this.direcaoVertical = -1
         }
     },
 
     desenharObjeto() {
-        contexto.drawImage(pegarImagem(this.imagemSrc), this.posicaoX, this.posicaoY, this.largura, this.altura)
+        let img = pegarImagem(this.tempoTiro > 0 ? this.imagemTiro : this.imagemSrc);
+        if (this.tempoTiro > 0) this.tempoTiro--;
+        contexto.drawImage(img, this.posicaoX, this.posicaoY, this.largura, this.altura)
 
         // Barra de vida do boss (acima dele)
         let porcentagemVida = this.vidaDoBoss / this.vidaMaximaDoBoss
@@ -89,17 +94,16 @@ let bossDaFase = {
     },
 
     colidiuCom(outroObjeto) {
-        return (this.posicaoX < outroObjeto.posicaoX + outroObjeto.largura) &&
-               (this.posicaoX + this.largura > outroObjeto.posicaoX) &&
-               (this.posicaoY < outroObjeto.posicaoY + outroObjeto.altura) &&
-               (this.posicaoY + this.altura > outroObjeto.posicaoY)
+        return verificarColisao(this, outroObjeto)
     },
 
     atirar() {
         this.contadorDeTiro += 1
         if (this.contadorDeTiro >= configuracaoDaFase.taxaDeCriacao[0]) {
             this.contadorDeTiro = 0
-            listaDeTirosDoBoss.push(new TiroBoss(this.posicaoX, this.posicaoY + this.altura / 2 - 4, 16, 8, 'red'))
+            this.tempoTiro = 20;
+            SoundManager.tocarSomTiroBoss()
+            criarTiroAleatorioDoBoss(this, '../assets/tiro_aviao_aviao/tiroaviao03.png', 100, 50, true).forEach((tiroCriado) => listaDeTirosDoBoss.push(tiroCriado))
         }
     }
 }
@@ -107,6 +111,7 @@ let bossDaFase = {
 let cooldownDeColisao = 0
 
 document.addEventListener('keydown', (eventoTeclado) => {
+    SoundManager.inicializar() // garante AudioContext após interação do usuário
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = -5
         if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 5
@@ -116,10 +121,6 @@ document.addEventListener('keydown', (eventoTeclado) => {
             window.location.href = "mapa.html"
         }
     }
-
-    if (eventoTeclado.key === 'Escape') {
-        window.location.href = "mapa.html"
-    }
 })
 
 document.addEventListener('keyup', (eventoTeclado) => {
@@ -127,17 +128,30 @@ document.addEventListener('keyup', (eventoTeclado) => {
         if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') naveDoJogador.direcaoDeMovimento = 0
         if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') naveDoJogador.direcaoDeMovimento = 0
     }
+
+    if (eventoTeclado.key === 'Escape') {
+        if (!window.saindo) {
+            window.saindo = true;
+            window.location.href = "mapa.html"
+        }
+    }
 })
 
 document.addEventListener('keypress', (eventoTeclado) => {
     if (estadoAtualDaFase !== ESTADOS_DA_FASE.JOGANDO) return
     if (eventoTeclado.key === 'l' || eventoTeclado.key === 'z') {
-        listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 4, 16, 8, 'red'))
+        if (naveDoJogador.cooldownTiro <= 0) {
+            listaDeTirosDisparados.push(new Tiro(naveDoJogador.posicaoX + naveDoJogador.largura / 2 + 10, naveDoJogador.posicaoY + naveDoJogador.altura / 2 - 10, 120, 60, '../assets/tiros_personagens/tiros_personagens.png'))
+            naveDoJogador.cooldownTiro = 15;
+            SoundManager.tocarSomTiro()
+        }
     }
 })
 
 function iniciarFase() {
     naveDoJogador.vida = configuracaoDaFase.vidasDaFase
+    vidaMaximaDoJogador = configuracaoDaFase.vidasDaFase
+    naveDoJogador.pontos = 0
     naveDoJogador.posicaoX = 50
     naveDoJogador.posicaoY = 245
     naveDoJogador.direcaoDeMovimento = 0
@@ -145,11 +159,12 @@ function iniciarFase() {
     listaDeTirosDoBoss = []
     bossDaFase.iniciar()
     cooldownDeColisao = 0
+    inicializarColetaveis()
+    SoundManager.resetarResultado()
 
     elementoCanvasDoJogo.style.cursor = 'default'
     estadoAtualDaFase = ESTADOS_DA_FASE.JOGANDO
 
-    try { audioMotorDaNave.currentTime = 0; audioMotorDaNave.play().catch(() => { }) } catch (erroDoNavegador) { }
 }
 
 /**
@@ -164,6 +179,7 @@ function conferirBatidaDaNaveComBoss() {
     if (bossDaFase.colidiuCom(naveDoJogador)) {
         naveDoJogador.vida -= 1
         cooldownDeColisao = 60
+        SoundManager.tocarSomDano()
     }
 }
 
@@ -176,6 +192,7 @@ function conferirTirosNoBoss() {
         if (bossDaFase.colidiuCom(tiroDisparadoAgora)) {
             listaDeTirosDisparados.splice(listaDeTirosDisparados.indexOf(tiroDisparadoAgora), 1)
             bossDaFase.vidaDoBoss -= 1
+            SoundManager.tocarSomImpacto()
         }
     })
 }
@@ -187,8 +204,8 @@ function conferirTirosDoBossNaNave() {
     listaDeTirosDoBoss.forEach((tiro) => {
         if (naveDoJogador.colidiuCom(tiro)) {
             listaDeTirosDoBoss.splice(listaDeTirosDoBoss.indexOf(tiro), 1)
-            naveDoJogador.vida -= 1
-            try { audioDeColisao.currentTime = 0; audioDeColisao.play().catch(() => { }) } catch (erroDoNavegador) { }
+            naveDoJogador.vida -= tiro.dano
+            SoundManager.tocarSomDano()
         }
     })
 }
@@ -199,13 +216,30 @@ function conferirTirosDoBossNaNave() {
  */
 function desenharTelaDeVitoriaOuDerrota() {
     contexto.fillStyle = 'rgba(0, 0, 0, 0.7)'
-    contexto.fillRect(0, 0, 800, 560)
-    contexto.fillStyle = 'white'
-    contexto.textAlign = 'center'
-    contexto.font = 'bold 50px Arial'
-    contexto.fillText(mensagemDeResultado, 400, 260)
-    contexto.font = '20px Arial'
-    contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 400, 320)
+    contexto.fillRect(0, 0, 1024, 640)
+
+    if (mensagemDeResultado === 'VITÓRIA!') {
+        contexto.drawImage(pegarImagem('../assets/vc_ganhou.png'), 212, 100, 600, 400)
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 550)
+        // Exibir pontuação final
+        contexto.font = 'bold 24px Arial'
+        contexto.fillStyle = '#FFD700'
+        contexto.fillText('Pontuação: ' + naveDoJogador.pontos + ' pts', 512, 510)
+    } else {
+        contexto.fillStyle = 'white'
+        contexto.textAlign = 'center'
+        contexto.font = 'bold 50px Arial'
+        contexto.fillText(mensagemDeResultado, 512, 300)
+        contexto.font = '20px Arial'
+        contexto.fillText('Aperte Enter ou ESC para voltar ao mapa', 512, 360)
+        // Exibir pontuação final
+        contexto.font = 'bold 22px Arial'
+        contexto.fillStyle = '#FFD700'
+        contexto.fillText('Pontuação: ' + naveDoJogador.pontos + ' pts', 512, 400)
+    }
 }
 
 function desenharGraficosDoNivel() {
@@ -214,18 +248,22 @@ function desenharGraficosDoNivel() {
     gerenciadorDeTiros.desenharNaTela()
     listaDeTirosDoBoss.forEach((tiro) => tiro.desenharTiro())
     bossDaFase.desenharObjeto()
+    desenharColetaveis(contexto)
 
     textoFixoDeVidas.desenharTexto('Vidas:', 640, 40, 'white', '30px Georgia')
     textoComValorDeVidas.desenharTexto(naveDoJogador.vida, 740, 40, 'red', '30px Georgia')
+    textoFixoDePontos.desenharTexto('Pontos:', 640, 75, 'white', '22px Georgia')
+    textoComValorDePontos.desenharTexto(naveDoJogador.pontos, 760, 75, '#FFD700', '22px Georgia')
 
     // Instrução ESC
     contexto.textAlign = 'center'
     contexto.font = '14px Arial'
     contexto.fillStyle = 'rgba(255,255,255,0.7)'
-    contexto.fillText('Pressione [ESC] para voltar ao Mapa', 400, 540)
+    contexto.fillText('Pressione [ESC] para voltar ao Mapa', 512, 620)
 }
 
 function atualizarCalculosDoNivel() {
+    if (naveDoJogador.cooldownTiro > 0) naveDoJogador.cooldownTiro--
     naveDoJogador.mover()
     gerenciadorDeTiros.atualizarPosicoes()
     
@@ -238,6 +276,7 @@ function atualizarCalculosDoNivel() {
         }
     })
 
+    atualizarColetaveis(naveDoJogador, vidaMaximaDoJogador)
     conferirTirosNoBoss()
     conferirBatidaDaNaveComBoss()
     conferirTirosDoBossNaNave()
@@ -245,13 +284,13 @@ function atualizarCalculosDoNivel() {
     if (naveDoJogador.vida <= 0) {
         mensagemDeResultado = 'DERROTA!'
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
-        audioMotorDaNave.pause()
-    } else if (bossDaFase.vidaDoBoss == 0) {
+        SoundManager.tocarSomDerrota()
+    } else if (bossDaFase.vidaDoBoss <= 0) {
         mensagemDeResultado = 'VITÓRIA!'
         fasesJaCompletadas[ID_DA_FASE] = true
         salvarProgresso() // Salva as fases destravadas no localStorage
         estadoAtualDaFase = ESTADOS_DA_FASE.RESULTADO
-        audioMotorDaNave.pause()
+        SoundManager.tocarSomVitoria()
     }
 }
 
@@ -260,7 +299,7 @@ function atualizarCalculosDoNivel() {
  * Limpa o canvas e chama as funções de desenho e atualização de acordo com o estado do jogo.
  */
 function principal() {
-    contexto.clearRect(0, 0, 800, 560)
+    contexto.clearRect(0, 0, 1024, 640)
 
     if (estadoAtualDaFase === ESTADOS_DA_FASE.JOGANDO) {
         desenharGraficosDoNivel()

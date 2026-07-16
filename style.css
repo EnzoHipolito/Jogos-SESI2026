@@ -16,7 +16,39 @@ body {
     overscroll-behavior: none;
 }
 
+#wrap {
+    position: relative;
+    width: 1024px;
+    height: 640px;
+    box-shadow:
+        0 0 0 2px rgba(100, 80, 200, 0.4),
+        0 0 40px rgba(80, 40, 160, 0.35),
+        0 0 80px rgba(40, 20, 80, 0.2);
+    border-radius: 4px;
+}
+
 canvas {
     display: block;
     border-radius: 4px;
+}
+
+.btn-voltar {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(200, 40, 40, 0.8);
+    color: white;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    border: 1px solid white;
+    cursor: pointer;
+    z-index: 100;
+}
+.btn-voltar:hover {
+    background-color: rgba(255, 60, 60, 1);
 }

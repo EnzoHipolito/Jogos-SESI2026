@@ -23,9 +23,6 @@ document.addEventListener('keydown', (eventoTeclado) => {
         }
     }
 
-    if (eventoTeclado.key === 'Escape') {
-        window.location.href = "../index.html"
-    }
 })
 
 document.addEventListener('keyup', (eventoTeclado) => {
@@ -33,10 +30,17 @@ document.addEventListener('keyup', (eventoTeclado) => {
     if (eventoTeclado.key === 'd' || eventoTeclado.key === 'ArrowRight') if (personagemNoMapa.direcaoX > 0) personagemNoMapa.direcaoX = 0
     if (eventoTeclado.key === 'w' || eventoTeclado.key === 'ArrowUp') if (personagemNoMapa.direcaoY < 0) personagemNoMapa.direcaoY = 0
     if (eventoTeclado.key === 's' || eventoTeclado.key === 'ArrowDown') if (personagemNoMapa.direcaoY > 0) personagemNoMapa.direcaoY = 0
+
+    if (eventoTeclado.key === 'Escape') {
+        if (!window.saindo) {
+            window.saindo = true;
+            window.location.href = "../index.html"
+        }
+    }
 })
 
 function principal() {
-    contexto.clearRect(0, 0, 800, 560)
+    contexto.clearRect(0, 0, 1024, 640)
     desenharMapa()
     personagemNoMapa.mover()
     personagemNoMapa.desenharObjeto()

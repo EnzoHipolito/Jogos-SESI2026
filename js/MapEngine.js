@@ -1,8 +1,8 @@
 // ─── Dados das 3 fases ───────────────────────
 const fasesDoJogo = [
-    { idFase: 0, posicaoX: 200, posicaoY: 280, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: '../assets/disco.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 5 },
-    { idFase: 1, posicaoX: 400, posicaoY: 280, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: '../assets/disco2.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 5 },
-    { idFase: 2, posicaoX: 600, posicaoY: 280, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: '../assets/disco3.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 4 },
+    { idFase: 0, posicaoX: 220, posicaoY: 350, nomeDaFase: 'EL CASINO', dificuldade: 'FÁCIL', imagemDoBotao: '../assets/vilao_carta/vilao_carta_01.png', pontosParaVencer: 3, velocidadeDosInimigos: [1.5, 2.5], taxaDeCriacao: [90, 120, 180], vidasDaFase: 5, iconOffsetX: -75, iconOffsetY: -85 },
+    { idFase: 1, posicaoX: 500, posicaoY: 360, nomeDaFase: 'A TORMENTA', dificuldade: 'NORMAL', imagemDoBotao: '../assets/vilao_nuvem/vilao_nuvem1.png', pontosParaVencer: 5, velocidadeDosInimigos: [2.5, 4.0], taxaDeCriacao: [70, 100, 150], vidasDaFase: 5, iconOffsetX: -30, iconOffsetY: -90 },
+    { idFase: 2, posicaoX: 800, posicaoY: 375, nomeDaFase: 'O GENERAL', dificuldade: 'DIFÍCIL', imagemDoBotao: '../assets/aviao_vilao/31-removebg-preview.png', pontosParaVencer: 8, velocidadeDosInimigos: [3.5, 5.5], taxaDeCriacao: [55, 80, 120], vidasDaFase: 4, iconOffsetX: -35, iconOffsetY: -85 },
 ]
 
 // ─── Progresso global (quais fases foram completadas)
@@ -35,10 +35,10 @@ function verificarFase(posicaoMouseX, posicaoMouseY) {
 function desenharMapa() {
     // Fundo
     if (imagemFundoDoMapa.complete && imagemFundoDoMapa.naturalWidth > 0) {
-        contexto.drawImage(imagemFundoDoMapa, 0, 0, 800, 560)
+        contexto.drawImage(imagemFundoDoMapa, 0, 0, 1024, 640)
     } else {
         contexto.fillStyle = '#08001f'
-        contexto.fillRect(0, 0, 800, 560)
+        contexto.fillRect(0, 0, 1024, 640)
     }
 
     // ── Botões de fase (agora são apenas imagens) ──
@@ -55,7 +55,7 @@ function desenharMapa() {
         }
 
         // Desenha a imagem (usando pegarImagem do Util.js)
-        contexto.drawImage(pegarImagem(faseASerDesenhada.imagemDoBotao), faseASerDesenhada.posicaoX - 30, faseASerDesenhada.posicaoY - 30, 60, 60)
+        contexto.drawImage(pegarImagem(faseASerDesenhada.imagemDoBotao), faseASerDesenhada.posicaoX - 50, faseASerDesenhada.posicaoY - 60, 100, 100)
 
         contexto.globalAlpha = 1 // reseta a transparência
 
@@ -81,10 +81,10 @@ function desenharMapa() {
     contexto.textAlign = 'center'
     contexto.font = 'bold 24px Arial'
     contexto.fillStyle = 'rgba(255,255,255,0.9)'
-    contexto.fillText('SELECIONE A FASE', 400, 40)
+    contexto.fillText('SELECIONE A FASE', 512, 40)
 
     // Instrução ESC
     contexto.font = '14px Arial'
     contexto.fillStyle = 'rgba(255,255,255,0.7)'
-    contexto.fillText('Pressione [ESC] para voltar ao Menu', 400, 540)
+    contexto.fillText('Pressione [ESC] para voltar ao Menu', 512, 620)
 }
