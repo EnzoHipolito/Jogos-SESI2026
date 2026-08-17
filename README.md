@@ -48,8 +48,8 @@ Como um terceiro pode rodar este projeto:
    - Basta navegar até o diretório do projeto clonado e abrir o arquivo `index.html` em qualquer navegador atual (Google Chrome, Firefox, Edge).
    - *Dica/Recomendação:* Para evitar problemas locais de política do navegador com imagens (CORS), recomenda-se a utilização de um servidor local, como a extensão **Live Server** para o VSCode.
 3. **Produção / Deploy:**
-   [Link do Vercel - Inserir o link aqui](#) *(Substitua este espaço em branco pelo URL real do projeto quando hospedado no Vercel).*
+   [https://jogos-sesi-2026.vercel.app/](#)
 
 ## 6. Créditos
 - **Desenvolvedores:** Bernardo Rodrigues, Enzo dos Santos Hipolito, Matheus Orsi Reis e Santiago Fidmay. 
-- **Product Owner:** Professor Orientador
+- **Product Owner:** Professor Carlos Roberto da Silva Filho
